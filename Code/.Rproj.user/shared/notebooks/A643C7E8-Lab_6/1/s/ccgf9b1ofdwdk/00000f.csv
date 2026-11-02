@@ -1,3 +1,0 @@
-"0","listings %>%"
-"0","  group_by(room_type) %>%"
-"0","  summarise(min_price = min(price), max(price), mean(price), sd_price = sd(price)) "

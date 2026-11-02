@@ -1,2 +1,0 @@
-"0","# model 4: residuals vs fitted values plot"
-"0","m4 %>% plot(which = 1)"

@@ -1,1 +1,0 @@
-"0","summarise(listings, min(price), max(price), mean(price), median(price))"

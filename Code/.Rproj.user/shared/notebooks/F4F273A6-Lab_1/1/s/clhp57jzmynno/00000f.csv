@@ -1,2 +1,0 @@
-"0","# read in the dataset"
-"0","listings  <- read_csv(""listings_edinburgh.csv"")"

@@ -1,4 +1,0 @@
-"0","listings %>% "
-"0","  ggplot(aes(x = review_scores_rating, y = price)) +"
-"0","  geom_point() +"
-"0","  geom_smooth()"

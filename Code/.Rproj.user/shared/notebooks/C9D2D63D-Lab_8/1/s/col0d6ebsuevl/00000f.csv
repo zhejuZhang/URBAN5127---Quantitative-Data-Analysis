@@ -1,8 +1,0 @@
-"0","# filter out the two boats"
-"0","listings_rows  <-  listings_rows %>% "
-"0","  filter(row_numbers!= ""8"" & row_numbers!= ""8651"")"
-"0",""
-"0","# rerun model 4 now and save it to a new object"
-"0","m4_drop <- listings_rows %>%"
-"0","  lm(price ~ room_type + property_type + bathrooms + bedrooms + accommodates + review_scores_rating,"
-"0","     data = .)  "

@@ -1,6 +1,0 @@
-"0","listings %>%"
-"0","  ggplot(aes(bedrooms)) +"
-"0","  geom_histogram() +"
-"0","  labs(title = ""Distribution of bedrooms"","
-"0","       x = ""Bedrooms"","
-"0","       y = ""Count"")"

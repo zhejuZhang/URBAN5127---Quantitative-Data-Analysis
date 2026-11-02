@@ -1,5 +1,0 @@
-"0","# so let's keep (a) prices greater than or equal to £25 (b) prices £1,000 or under (c) five bathrooms or under "
-"0",""
-"0","listings <- filter(listings,"
-"0","                   price >= 25, price <= 1000, bathrooms <= 5) %>%"
-"0","  drop_na(price, bedrooms, bathrooms) # and drop any missing (na) values"

@@ -1,0 +1,456 @@
+---
+title: "Lab_4_Plamena"
+author: "Plamena Panayotova"
+output: html_document
+    html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+date: "`r Sys.Date()`"
+---
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message= FALSE)
+
+# 1. Load libraries:
+
+library(tidyverse)
+library(ggplot2)
+
+# 2.  Read in data (as we did in Labs 1 and 2):
+
+listings_clean_clean <- readRDS("listings_clean.rds")
+
+# 3. Check if the variables room_type and property_type are in the appropriate format and that price is restricted to a suitable range:
+
+listings_clean_clean |> select (room_type, property_type) |> glimpse ()
+
+range(listings_clean_clean$price)
+
+range(listings_clean_clean$bedrooms) # Are you happy with the range?
+range(listings_clean_clean$bathrooms) # Are you happy with the range?
+
+```
+
+
+# Exercise 1. A boxplot of price by room type.
+
+## First attempt:
+
+```{r}
+listings_clean_clean |>
+  ggplot(aes(room_type, price)) +
+  geom_boxplot() +
+  labs(title = "Distribution of price of Airbnb listings in Edinburgh",
+       subtitle = "Prices restricted to range $25 to $1,000",
+       x = "Room type",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com")
+
+# Does it look good? Can you edit the chart to make it more informative?
+
+```
+
+## Changing the scale on the y-axis of the boxplot to a log scale:
+
+```{r}
+
+listings_clean |>
+  ggplot(aes(room_type, price)) +
+  geom_boxplot() +
+  scale_y_log10()  +
+  labs(title = "Distribution of price of Airbnb listings in Edinburgh",
+       subtitle = "Prices restricted to range $25 to $1,000",
+       x = "Room type",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com")
+
+# The log scale is confusing? Let's edit it and keep only base 10.
+```
+
+
+## Modifying the scale on the y-axis a bit further:
+
+```{r}
+
+Lab_4_boxplot_1 <- listings_clean |>
+  ggplot(aes(room_type, price)) +
+  geom_boxplot() +
+  scale_y_log10(breaks = c(10, 100, 1000), limits = c(10, NA)) +
+    labs(title = "Distribution of price of Airbnb listings in Edinburgh by room type",
+       subtitle = "Prices restricted to range $25 to $1,000",
+       x = "Room type",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com")
+
+
+
+ggsave("Lab_4_boxplot_1.jpg", plot=Lab_4_boxplot_1)
+
+print(Lab_4_boxplot_1)
+
+```
+
+## Summary statistics of price by room_type:
+
+```{r}
+
+listings_clean |>
+  group_by(room_type) |>
+  summarise(
+    count = n(),
+    mean = mean(price, na.rm = TRUE),
+    median = median(price, na.rm = TRUE),
+    min = min(price, na.rm = TRUE),
+    max = max(price, na.rm = TRUE),
+    sd = sd(price, na.rm = TRUE),
+    IQR = IQR(price, na.rm = TRUE),
+    Q1 = quantile(price, 0.25, na.rm = TRUE),  
+    Q3 = quantile(price, 0.75, na.rm = TRUE)
+  )
+
+```
+
+
+## Interpreting the boxplot:
+
+1. Comparing the medians - entire home has the highest median price (ca. $100); shared room comes second, then private room. \
+2. Comparing the IQR - shared room has the largest IQR, showing us the the middle 50% of the data lie between 43 and 500. Most of the data points in this distribution fit within the IQR. In contrast, the IQR of the other two categories is much narrower, with the middle 50% of the data lying on the low-end price scale. \
+3. Comparing outliers: No outliers in shared room. In contrast, the distributions of entire home and private room are a lot more spread out, with many outliers. \
+
+**Outliers in entire home:** \
+
+$Q3 + 1.5*IQR = 150 + 1.5*80= 150 + 120= 270$ \
+
+So any observations > 270 will count as outliers. \
+
+**Outliers in private room:** \
+
+$Q3 + 1.5*IQR = 62 + 1.5*27= 102.20$ \
+
+**Boxplots give us: the min (excl. outliers), the first quartile (Q1), the median (Q2), the third quartile (Q3), the max (excl. outliers). We also see the IQR and the outliers.**
+
+
+# Exercise 2. Exploring the distribution of bedrooms. 
+
+## A histogram of bedrooms:
+
+```{r}
+listings_clean |>
+  ggplot(aes(bedrooms)) +
+  geom_histogram() +
+  labs(title = "Distribution of bedrooms",
+       x = "Bedrooms",
+       y = "Count")
+
+# Does it look good enough? Let's try a bar chart of bedrooms since this is a discrete (rather than continuous) variable.
+
+```
+
+## A bar chart of bedrooms:
+
+```{r}
+listings_clean |>
+  ggplot(aes(bedrooms)) +
+  geom_bar() +
+  labs(title = "Distribution of bedrooms",
+       x = "Bedrooms",
+       y = "Count")
+
+#Not great. Purely for visualisation purposes, let's change bedrooms to a factor variable and produce a modified bar plot.
+
+```
+
+## Another attempt:
+
+```{r}
+
+listings_clean |>
+  mutate(bedrooms = factor(bedrooms)) |> # Doesn't save the mutation in the dataset.
+  ggplot(aes(bedrooms)) +
+  geom_bar() +
+  labs(title = "Distribution of bedrooms",
+       x = "Bedrooms",
+       y = "Count") +
+  theme_minimal()
+
+```
+
+## Checking the distribution of bedrooms:
+
+```{r}
+listings_clean |>
+  mutate(bedrooms = factor(bedrooms)) |> 
+  count(bedrooms)
+```
+
+
+# Exercise 3. Scatterplot of price and review scores.
+
+
+## First attempt:
+
+```{r}
+listings_clean |>
+  drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) +
+  geom_point() +
+  labs(title = "Price versus average review score",
+       x = "Average review score",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+```
+
+
+## Modifying the scatterplot with alpha for transparency:
+
+```{r}
+
+listings_clean |>
+  drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) +
+  geom_point(alpha=0.1) +
+  labs(title = "Price versus average review score",
+       x = "Average review score",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+```
+## Another attempt:
+
+```{r}
+listings_clean |>
+  drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) +
+  geom_point(alpha=0.5) +
+  labs(title = "Price versus average review score",
+       x = "Average review score",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+```
+
+## Modifying the scatterplot using jitter:
+
+```{r}
+listings_clean |>
+  drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating,price)) +
+  geom_jitter(alpha = 0.1) +
+  labs(title = "Price versus average review score",
+       x = "Average review score",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+
+# It helps to jitter the data points when many of them take the same value.
+```
+## Let's fit a regression line:
+
+```{r}
+# Create the plot and save it as an object
+Lab_4_price_reviews_plot <- listings_clean |>
+  drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Price versus average review score",
+    x = "Average review score",
+    y = "Price (£)",
+    caption = "Source: InsideAirbnb.com"
+  ) +
+  theme_minimal()
+
+ggsave("Lab_4_price_reviews_plot.png", plot = Lab_4_price_reviews_plot, width = 8, height = 5, dpi = 300)
+
+print(Lab_4_price_reviews_plot)
+```
+
+# Exercise 4. A bar chart of property type.
+
+## First attempt:
+
+```{r}
+listings_clean |>
+  ggplot(aes(x = property_type)) +
+  geom_bar() +
+    labs(title = "Distribution of property type",
+       x = "Property type",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+
+# Try interpreting this! Can you read the x-axis?!
+
+```
+
+## Modifying the bar chart labels:
+
+```{r}
+
+listings_clean |>
+  ggplot(aes(x = property_type)) +
+  geom_bar() +
+    labs(title = "Distribution of property type",
+       x = "Property types",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+# That's much better now!
+
+```
+
+## Flipping the axes:
+
+```{r}
+
+# ordered: low to high
+listings_clean |>
+  ggplot(aes(x = property_type)) +
+  geom_bar() +
+  coord_flip() +
+    labs(title = "Distribution of property type",
+       x = "Property types",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com")
+
+# What version do you think works better?
+
+```
+
+## Another attempt:
+
+
+```{r}
+# ordered: low to high
+listings_clean |>
+  ggplot(aes(x = fct_infreq(property_type))) +
+  geom_bar() +
+  coord_flip() +
+    labs(title = "Distribution of property type",
+       x = "Property types",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com")
+```
+
+
+## Another attempt:
+
+```{r}
+
+#Reordering the bars again and changing the scale to a log scale:
+
+#Since **fct_infreq()** orders the levels from least frequent to most frequent, **fct_rev()** 
+# is used to reverse this order, so that the most frequent #categories come first 
+# (at the top or left of the chart), 
+# and the least frequent categories come last (at the bottom or right of the chart).
+
+listings_clean |>
+  ggplot(aes(x = fct_rev(fct_infreq(property_type)))) +
+  geom_bar() +
+  coord_flip() +
+  scale_y_log10() +
+  labs(title = "Distribution of property type",
+       x = "Property types",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+
+```
+
+# Exercise 5. Table of neighbourhoods.
+
+```{r}
+
+glimpse(listings_clean$neighbourhood_cleansed)
+
+#What is the level of measurement?
+
+listings_clean <- listings_clean |> mutate(neighbourhood_cleansed = factor(neighbourhood_cleansed))
+
+listings_clean |>
+  count(neighbourhood_cleansed) |>
+  arrange(desc(n)) |>
+  head(10)
+
+# If you want a table you can save:
+
+top10_neighb <- listings_clean |>
+  count(neighbourhood_cleansed, name = "Count") |>
+  arrange(desc(Count)) |>
+  slice_head(n = 10)
+
+print(top10_neighb)
+
+```
+
+# Exercise 7. Plot of the top 10 neighbourhoods:
+
+```{r}
+
+listings_clean |>
+    mutate(neighbourhood_cleansed = factor(neighbourhood_cleansed) |> 
+  fct_infreq() |> 
+  fct_rev()) |>
+  count(neighbourhood_cleansed) |>
+  arrange(-n) |> 
+  head(10) |>
+   ggplot(aes(neighbourhood_cleansed, n)) +
+  geom_col(fill="skyblue") +
+  coord_flip() +
+  labs(title = "Airbnb listings_clean by neighbourhood",
+       subtitle = "Top 10 neighbourhoods", 
+       x = "",
+       y = "",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+
+```
+
+
+
+
+>NB: If you only used fct_rev(), it would just flip the existing order of neighbourhood_cleansed (which might be alphabetical or another default ordering), but it wouldn't ensure the highest frequency neighborhoods appear first. Thus, using fct_infreq() first ensures that levels are sorted by frequency before we reverse them.
+
+>NB: geom_col() is used when you already have precomputed counts (like count(neighbourhood_cleansed) in your case) and want to plot them.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

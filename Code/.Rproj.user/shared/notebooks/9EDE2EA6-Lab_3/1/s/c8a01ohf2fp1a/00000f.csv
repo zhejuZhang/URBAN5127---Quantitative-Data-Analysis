@@ -1,8 +1,0 @@
-"0","listings %>%"
-"0","  ggplot(aes(price)) +"
-"0","  geom_histogram() +"
-"0","  labs(title = ""Distribution of price of Airbnb listings in Edinburgh"","
-"0","       subtitle = ""Prices restricted to range $25 to $1,000"","
-"0","       x = ""Price ($)"","
-"0","       y = ""Count"","
-"0","       caption = ""Source: InsideAirbnb.com"")"

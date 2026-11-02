@@ -1,0 +1,215 @@
+---
+title: "Lab 5 — Part 1: Airbnb Data Visualisation"
+author: "Zheju Zhang"
+date: "2026-10-23"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Overview
+
+This report completes the six tasks in **Part 1** using the supplied already-cleaned `listings_clean.rds` dataset. The original CSV cleaning steps are intentionally not repeated, so results reflect the provided RDS data.
+
+**Tasks:** (1) price by room type; (2) bedroom distribution; (3) price versus review score; (4) property-type distribution; (5) top 10 neighbourhoods table; (6) top 10 neighbourhoods chart.
+
+# Step 1 — Setup and load the dataset
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r load-data}
+# Import libraries needed for cleaning, plotting and table formatting.
+library(tidyverse)
+library(knitr)
+
+# Put listings_clean.rds in the same folder as this Rmd.
+# RDS files preserve R column classes and factor levels.
+listings_clean <- readRDS("listings_clean.rds")
+
+# Examine the imported data.
+glimpse(listings_clean)
+```
+
+# Step 2 — Check the cleaned RDS variables
+
+The file `listings_clean.rds` is already a cleaned dataset. **Do not reapply the CSV filters from the earlier lab**, since doing so could unnecessarily remove observations. First, confirm that all required variables exist and that numeric variables can be plotted.
+
+```{r prepare-data}
+# Copy the RDS dataset, leaving the original object unchanged.
+listings <- listings_clean
+
+# Make sure the six exercises' required fields are present.
+required_vars <- c(
+  "price", "room_type", "bedrooms", "review_scores_rating",
+  "property_type", "neighbourhood_cleansed"
+)
+missing_vars <- setdiff(required_vars, names(listings))
+if (length(missing_vars) > 0) {
+  stop("Missing columns in listings_clean.rds: ",
+       paste(missing_vars, collapse = ", "))
+}
+
+# Check types; the already-cleaned file should have numeric prices and ratings.
+if (!is.numeric(listings$price) ||
+    !is.numeric(listings$review_scores_rating)) {
+  stop("price and review_scores_rating must be numeric. Check the RDS columns.")
+}
+
+cat("Number of listings in RDS:", nrow(listings), "\n")
+print(sapply(listings[required_vars], class))
+print(count(listings, room_type, sort = TRUE))
+```
+
+# Step 3 — Task 1: Boxplot of price by room type
+
+**Question:** How does `price` vary between `room_type` categories?
+
+Each box shows the median and middle 50% of prices; points beyond the whiskers are potential outliers.
+
+```{r task-1-boxplot, fig.width=9, fig.height=5}
+task1_plot <- listings %>%
+  filter(!is.na(room_type)) %>%
+  ggplot(aes(x = room_type, y = price)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.8) +
+  labs(
+    title = "Airbnb Prices by Room Type in Edinburgh",
+    subtitle = "Based on the supplied cleaned RDS dataset",
+    x = "Room type",
+    y = "Price (dataset currency)",
+    caption = "Source: Edinburgh Airbnb listings dataset"
+  ) +
+  theme_minimal()
+
+print(task1_plot)
+```
+
+# Step 4 — Task 2: Distribution of bedrooms
+
+**Question:** How many listings have 0, 1, 2, 3, etc. bedrooms?
+
+The bedroom count is discrete, so a bar chart is appropriate.
+
+```{r task-2-bedrooms, fig.width=9, fig.height=5}
+task2_plot <- listings %>%
+  filter(!is.na(bedrooms)) %>%
+  ggplot(aes(x = factor(bedrooms))) +
+  geom_bar(fill = "steelblue") +
+  labs(
+    title = "Distribution of Bedrooms Among Airbnb Listings",
+    x = "Number of bedrooms",
+    y = "Number of listings"
+  ) +
+  theme_minimal()
+
+print(task2_plot)
+
+# Optional frequency table for checking the chart.
+listings %>% count(bedrooms, sort = TRUE)
+```
+
+# Step 5 — Task 3: Relationship between price and review score
+
+**Question:** Is there a relationship between `price` and `review_scores_rating`?
+
+Each point is a listing. Jitter and transparency help when listings overlap. The fitted line shows a linear trend; it does not demonstrate causation.
+
+```{r task-3-scatter, fig.width=9, fig.height=5}
+task3_plot <- listings %>%
+  filter(!is.na(review_scores_rating)) %>%
+  ggplot(aes(x = review_scores_rating, y = price)) +
+  geom_jitter(alpha = 0.2, width = 0.1, height = 0) +
+  geom_smooth(method = "lm", se = TRUE, colour = "red") +
+  labs(
+    title = "Airbnb Price and Review Score",
+    x = "Review score rating",
+    y = "Price (dataset currency)"
+  ) +
+  theme_minimal()
+
+print(task3_plot)
+```
+
+# Step 6 — Task 4: Distribution of property types
+
+**Question:** Which `property_type` categories are most common?
+
+Horizontal bars help display long category names. The most common types appear at the top.
+
+```{r task-4-property-types, fig.width=10, fig.height=7}
+task4_plot <- listings %>%
+  filter(!is.na(property_type)) %>%
+  ggplot(aes(x = forcats::fct_rev(forcats::fct_infreq(property_type)))) +
+  geom_bar(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Distribution of Airbnb Property Types",
+    x = "Property type",
+    y = "Number of listings"
+  ) +
+  theme_minimal()
+
+print(task4_plot)
+```
+
+# Step 7 — Task 5: Top 10 neighbourhoods table
+
+**Question:** Which ten neighbourhoods have the largest number of listings?
+
+We count listings, sort from highest to lowest and retain the first ten.
+
+```{r task-5-top10-table}
+top10_neighbourhoods <- listings %>%
+  filter(!is.na(neighbourhood_cleansed)) %>%
+  count(neighbourhood_cleansed, name = "number_of_listings") %>%
+  arrange(desc(number_of_listings), neighbourhood_cleansed) %>%
+  slice_head(n = 10)
+
+knitr::kable(
+  top10_neighbourhoods,
+  col.names = c("Neighbourhood", "Number of listings"),
+  caption = "Top 10 Edinburgh neighbourhoods by Airbnb listing count"
+)
+```
+
+# Step 8 — Task 6: Plot the top 10 neighbourhoods
+
+**Question:** How do listing counts compare across the top ten neighbourhoods?
+
+We reuse the table created in Task 5, so both outputs show the same neighbourhoods and counts.
+
+```{r task-6-top10-chart, fig.width=10, fig.height=6}
+task6_plot <- top10_neighbourhoods %>%
+  ggplot(aes(
+    x = reorder(neighbourhood_cleansed, number_of_listings),
+    y = number_of_listings
+  )) +
+  geom_col(fill = "skyblue") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Edinburgh Neighbourhoods by Airbnb Listings",
+    x = "Neighbourhood",
+    y = "Number of listings"
+  ) +
+  theme_minimal()
+
+print(task6_plot)
+```
+
+# Step 9 — Checklist and optional export
+
+All six tasks are represented above: **five plots and one table**. The export commands below are optional and only run when you change `eval=FALSE` to `eval=TRUE`.
+
+```{r export-outputs, eval=FALSE}
+ggsave("Task1_Price_by_RoomType.png", task1_plot, width = 9, height = 5, dpi = 300)
+ggsave("Task2_Bedrooms.png", task2_plot, width = 9, height = 5, dpi = 300)
+ggsave("Task3_Price_vs_Reviews.png", task3_plot, width = 9, height = 5, dpi = 300)
+ggsave("Task4_Property_Types.png", task4_plot, width = 10, height = 7, dpi = 300)
+ggsave("Task6_Top10_Neighbourhoods.png", task6_plot, width = 10, height = 6, dpi = 300)
+write_csv(top10_neighbourhoods, "Task5_Top10_Neighbourhoods.csv")
+```
+
+**To create the HTML report:** Open this `.Rmd` in RStudio, put `listings_clean.rds` in the same folder (or update its path), then click **Knit → Knit to HTML**.

@@ -1,5 +1,0 @@
-"0","# Layer 1 + Layer 2"
-"0",""
-"0","listings %>%"
-"0","  ggplot(aes(price)) + # adding another layer using the '+' symbol"
-"0","  geom_histogram() # Layer 2 will add the type of plot we want"

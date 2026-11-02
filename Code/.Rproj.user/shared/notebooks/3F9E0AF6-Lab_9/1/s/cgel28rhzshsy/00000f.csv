@@ -1,3 +1,0 @@
-"0","# non-linearity: what we are correcting for primarily."
-"0","# 2a. residuals vs fitted"
-"0","m4_log %>% plot(which = 1) # looks a little better - less curved"

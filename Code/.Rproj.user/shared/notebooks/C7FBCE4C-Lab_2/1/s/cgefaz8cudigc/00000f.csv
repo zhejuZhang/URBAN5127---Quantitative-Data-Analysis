@@ -1,5 +1,0 @@
-"0","#  Make a table showing the summary statistics for price broken down by room_type."
-"0",""
-"0","listings %>%"
-"0","  group_by(room_type) %>%"
-"0","  summarise(min(price), median(price), mean(price), max(price))"

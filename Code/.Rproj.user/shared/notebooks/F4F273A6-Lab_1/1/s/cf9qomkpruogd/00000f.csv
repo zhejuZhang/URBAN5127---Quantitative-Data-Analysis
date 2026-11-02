@@ -1,3 +1,0 @@
-"0","# change room_type from character to factor"
-"0","listings <- mutate(listings,"
-"0","                   room_type = factor(room_type))"

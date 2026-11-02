@@ -1,2 +1,0 @@
-"0","# two arguments: my dataset, what I want the new column to be called"
-"0","listings_rows <- rownames_to_column(listings, ""row_numbers"") # eases checking influential outliers"

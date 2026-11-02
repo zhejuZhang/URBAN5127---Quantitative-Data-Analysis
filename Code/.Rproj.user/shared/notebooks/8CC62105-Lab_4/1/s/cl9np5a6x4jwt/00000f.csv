@@ -1,4 +1,0 @@
-"0","listings %>% "
-"0","ggplot(aes(x = room_type, fill = property_type)) + # Point 1"
-"0","  geom_bar(position = ""fill"") + # Point 2: note the quotes"
-"0","  labs(x = ""Room Type"", y = ""Count"")"

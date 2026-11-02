@@ -1,8 +1,0 @@
-"0","listings %>%"
-"0","  drop_na(review_scores_rating) %>%"
-"0","  ggplot(aes(review_scores_rating, price)) +"
-"0","  geom_point(alpha = 0.1) +"
-"0","  labs(title = ""Price versus average review score"","
-"0","       x = ""Average review score"","
-"0","       y = ""Price ($)"","
-"0","       caption = ""Source: InsideAirbnb.com"")"

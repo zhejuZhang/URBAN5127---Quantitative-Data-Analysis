@@ -1,4 +1,0 @@
-"0","# We'll sort bathrooms from low to high again, and look at the first twenty observations:"
-"0",""
-"0","listings %>% arrange(bathrooms) %>% "
-"0","  head(20)"

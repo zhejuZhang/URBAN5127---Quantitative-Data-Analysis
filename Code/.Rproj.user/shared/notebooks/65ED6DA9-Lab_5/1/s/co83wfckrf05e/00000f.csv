@@ -1,5 +1,0 @@
-"0","# 2. Create a table showing the mean and standard deviation of price by room_type."
-"0",""
-"0","listings_subset %>%"
-"0","  group_by(room_type) %>%"
-"0","  summarise(mean(price), sd(price)) "

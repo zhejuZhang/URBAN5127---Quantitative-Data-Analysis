@@ -1,2 +1,0 @@
-"0","# install.packages(""sandwich"") - do this in the console ***"
-"0","library(""sandwich"") # you would normally load this in your intial setup chunk"

@@ -1,4 +1,0 @@
-"0","listings %>%"
-"0","  count(neighbourhood_cleansed) %>%"
-"0","  arrange(n) %>% "
-"0","  tail(10)"

@@ -1,6 +1,0 @@
-"0","# drop review scores"
-"0",""
-"0","m5 <- listings %>%"
-"0","  mutate(log_price = log(price)) %>%"
-"0","  lm(log_price ~ room_type + property_type + bathrooms + bedrooms + accommodates,"
-"0","     data = .)"

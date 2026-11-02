@@ -1,5 +1,0 @@
-"0","# model 4: Q-Q plot"
-"0","listings %>%"
-"0","  lm(price ~ room_type + property_type + bathrooms + bedrooms + accommodates + review_scores_rating,"
-"0","     data = .) %>%"
-"0","  plot(which = 2) # gives us the Q-Q plot"

@@ -1,3 +1,0 @@
-"0","# 中文：include=FALSE 隐藏本块的代码和结果但仍执行；echo=TRUE 让后续块显示分析源代码。"
-"0","# English: include=FALSE executes this chunk while hiding its code and results; echo=TRUE displays source code in later chunks."
-"0","knitr::opts_chunk$set(echo = TRUE)"

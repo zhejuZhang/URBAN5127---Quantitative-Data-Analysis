@@ -1,4 +1,0 @@
-"0","# quick check: use visualisation skills from last week"
-"0","listings_subset %>%"
-"0","  ggplot(aes(price, room_type)) + # x axis = numeric variable, y = factor variable"
-"0","  geom_boxplot()"

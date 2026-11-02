@@ -1,8 +1,0 @@
-"0","  listings %>% "
-"0","  ggplot(aes(price, room_type)) +"
-"0","  geom_boxplot() +"
-"0","  labs(title = ""Arbinb listings: Price by Room Type"","
-"0","       x = ""Price ($)"","
-"0","       y = ""Type of Room"","
-"0","       caption = ""Source: InsideAirbnb.com"") +"
-"0","  theme_minimal()"

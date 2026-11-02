@@ -1,7 +1,0 @@
-"0","listings %>%"
-"0","  ggplot(aes(bathrooms)) + # adding the values we want to plot"
-"0","  geom_histogram() + # adding the type of plot we want"
-"0","  labs(title = ""Distribution of bathrooms of Airbnb listings in Edinburgh"","
-"0","       x = ""Number of bathrooms"","
-"0","       y = ""Count"","
-"0","       caption = ""Source: InsideAirbnb.com"")"

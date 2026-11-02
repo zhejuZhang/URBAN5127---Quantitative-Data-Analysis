@@ -1,7 +1,0 @@
-"0","# Diagnostics 1: Influential Outliers"
-"0",""
-"0","# 1. checking for outliers: model 4"
-"0","listings %>%"
-"0","  lm(price ~ room_type + property_type + bathrooms + bedrooms + accommodates + review_scores_rating,"
-"0","     data = .)  %>%"
-"0","  plot(which = 5)"

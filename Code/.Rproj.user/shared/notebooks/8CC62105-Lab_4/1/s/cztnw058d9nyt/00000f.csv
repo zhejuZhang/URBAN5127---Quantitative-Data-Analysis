@@ -1,8 +1,0 @@
-"0","listings %>% "
-"0","ggplot(aes(x = room_type, fill = property_type)) +"
-"0","  geom_bar(position = ""fill"") + "
-"0","  scale_y_continuous(labels = scales::percent) + # Point 3"
-"0","  labs(title = ""My Title"","
-"0","       fill = ""Property Type"", # Point 2"
-"0","    x = ""Room Type"", "
-"0","    y = ""Proportion"") # Point 1"

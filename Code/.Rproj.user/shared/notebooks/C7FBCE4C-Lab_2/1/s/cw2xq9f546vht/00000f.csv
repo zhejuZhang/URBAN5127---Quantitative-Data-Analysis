@@ -1,7 +1,0 @@
-"0","# Let's drop the missing values using drop_na()"
-"0",""
-"0","# 1. Price "
-"0",""
-"0","listings %>% "
-"0","  drop_na(price) %>% "
-"0","  summarise(min(price), median(price), mean(price), max(price))"

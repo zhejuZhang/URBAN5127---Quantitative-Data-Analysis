@@ -1,4 +1,0 @@
-"0","# these will be the cheapest"
-"0","listings %>%"
-"0","  arrange(price) %>%"
-"0","  head(10)"

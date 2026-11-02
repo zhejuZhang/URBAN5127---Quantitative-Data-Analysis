@@ -1,6 +1,0 @@
-"0","library(knitr) # remember all libraries get loaded in the setup chunk"
-"0",""
-"0","listings_subset %>%"
-"0","  group_by(room_type) %>%"
-"0","  summarise(mean_price = mean(price) , standard_deviation = sd(price)) %>% "
-"0","   kable() "

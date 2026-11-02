@@ -1,6 +1,0 @@
-"0","# transform the dependent variable in Model 4, saving it to a new object (m4_log)"
-"0",""
-"0","m4_log <- listings %>%"
-"0","  mutate(log_price = log(price)) %>%"
-"0","  lm(log_price ~ room_type + property_type + bathrooms + bedrooms + accommodates + review_scores_rating, "
-"0","     data = .)"

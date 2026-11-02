@@ -1,5 +1,0 @@
-"0","# Check the model behaves better "
-"0",""
-"0","# influential outliers"
-"0","# 1. residuals vs leverage"
-"0","m4_log %>% plot(which = 5) # still got same issues as we didn't remove the influential points"

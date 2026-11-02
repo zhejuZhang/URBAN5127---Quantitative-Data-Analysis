@@ -1,3 +1,0 @@
-"0","# simple summary of price (see Section 1 above)"
-"0","listings %>%"
-"0","  summarise(min(price), median(price), mean(price), max(price))"

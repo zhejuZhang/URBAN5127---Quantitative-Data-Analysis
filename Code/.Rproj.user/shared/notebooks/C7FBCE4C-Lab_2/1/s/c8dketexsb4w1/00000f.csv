@@ -1,3 +1,0 @@
-"0","listings %>%"
-"0","  count(room_type) %>%"
-"0","  mutate(percent = (n / sum(n)*100) %>% round(2))"

@@ -1,3 +1,0 @@
-"0","# 2. Bedrooms"
-"0","listings %>%"
-"0","  summarise(min(bedrooms), median(bedrooms), mean(bedrooms), max(bedrooms))"

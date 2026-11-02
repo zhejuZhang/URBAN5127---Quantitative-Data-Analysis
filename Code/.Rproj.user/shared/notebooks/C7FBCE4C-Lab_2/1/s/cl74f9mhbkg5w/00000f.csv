@@ -1,4 +1,0 @@
-"0","# 3. Bathrooms"
-"0","listings %>%"
-"0","  drop_na(bathrooms) %>% "
-"0","  summarise(min(bathrooms), median(bathrooms), mean(bathrooms), max(bathrooms))"

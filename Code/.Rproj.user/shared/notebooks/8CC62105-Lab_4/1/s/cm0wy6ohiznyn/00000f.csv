@@ -1,7 +1,0 @@
-"0","listings %>%"
-"0","  mutate(neighbourhood_cleansed = factor(neighbourhood_cleansed) %>% "
-"0","           fct_infreq() %>% "
-"0","           fct_rev()) %>%"
-"0","  count(neighbourhood_cleansed) %>%"
-"0","  arrange(-n) %>% "
-"0","  head(10) "

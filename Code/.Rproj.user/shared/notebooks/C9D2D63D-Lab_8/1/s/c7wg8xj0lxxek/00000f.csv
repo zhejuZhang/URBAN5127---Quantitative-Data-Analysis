@@ -1,5 +1,0 @@
-"0","library(tidyverse)"
-"0","library(texreg) # for comparing models"
-"0",""
-"0","# Read in data"
-"0","listings <- read_csv(""listings_edinburgh.csv"") # remember your file name and path may be different"

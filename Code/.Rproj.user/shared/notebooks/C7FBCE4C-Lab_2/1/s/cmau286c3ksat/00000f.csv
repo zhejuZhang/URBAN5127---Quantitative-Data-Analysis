@@ -1,4 +1,0 @@
-"0","# let's look at the higher end - those properties with the most bathrooms:"
-"0",""
-"0","listings %>% arrange(bathrooms) %>% "
-"0","  tail(20)"

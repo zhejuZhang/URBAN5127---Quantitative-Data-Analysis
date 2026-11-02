@@ -1,3 +1,0 @@
-"0","# Heteroscedasticity"
-"0","# 4a. residuals vs fitted"
-"0","m4_log %>% plot(which = 1) # looks better"

@@ -1,8 +1,0 @@
-"0","# 中文：geom_bar() 默认使用 stat_count，自动统计每个 room_type 的房源数；无需手动提供 y 值。"
-"0","# English: geom_bar() uses stat_count by default and counts listings per room_type without a manually supplied y value."
-"0","# 中文：条形图适合比较离散类别的频数；直方图则针对数值区间分箱，两者统计含义不同。"
-"0","# English: A bar chart compares discrete category frequencies, whereas a histogram bins numerical intervals; they represent different summaries."
-"0","# bar plot of room_type"
-"0","listings %>% "
-"0","  ggplot(aes(room_type)) +"
-"0","  geom_bar()"

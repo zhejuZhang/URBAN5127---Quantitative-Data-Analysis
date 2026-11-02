@@ -1,4 +1,0 @@
-"0","# boxplot of room_type"
-"0","listings %>% "
-"0","  ggplot(aes(room_type)) +"
-"0","  geom_boxplot()"

@@ -1,5 +1,0 @@
-"0","# look at the last twenty properties"
-"0","# these will be the most expensive"
-"0","listings %>%"
-"0","  arrange(price) %>%"
-"0","  tail(20)"

@@ -1,7 +1,0 @@
-"0","# 1. Create a new subset of your data which excludes shared rooms."
-"0",""
-"0","listings_subset <- filter(listings, room_type != ""Shared room"") "
-"0",""
-"0","# or using the tidyverse pipeline method (recommended):"
-"0","listings_subset <- listings %>% "
-"0","  filter(room_type != ""Shared room"") "

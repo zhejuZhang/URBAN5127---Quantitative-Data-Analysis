@@ -1,8 +1,0 @@
-"0","# 中文：只建立数据与映射层，没有添加 geom，因此会得到有坐标背景但没有数据标记的图。"
-"0","# English: This creates only data and mapping layers; with no geom, the result has axes/background but no data marks."
-"0","# 中文：这是拆解图形构建过程的教学步骤，并不表示数据为空或读取失败。"
-"0","# English: This is a teaching step that isolates plot construction, not evidence that the dataset is empty or the import failed."
-"0","# Layer 1 "
-"0",""
-"0","listings %>%"
-"0","  ggplot(aes(price)) "

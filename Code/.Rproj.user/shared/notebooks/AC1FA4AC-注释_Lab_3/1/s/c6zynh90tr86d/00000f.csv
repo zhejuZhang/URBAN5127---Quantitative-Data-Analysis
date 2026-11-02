@@ -1,5 +1,0 @@
-"0","# 中文：把 listings 直接放在 ggplot() 第一个参数，与上一块通过 %>% 传入数据的效果相同。"
-"0","# English: Supplying listings as ggplot()'s first argument is equivalent to passing it through %>% in the previous chunk."
-"0","# 中文：aes(price) 仍只指定 x 轴映射；没有 geom，所以仍不会绘制直方图柱形。"
-"0","# English: aes(price) still specifies only the x mapping; without a geom, no histogram bars are drawn."
-"0","ggplot(listings, aes(price))"

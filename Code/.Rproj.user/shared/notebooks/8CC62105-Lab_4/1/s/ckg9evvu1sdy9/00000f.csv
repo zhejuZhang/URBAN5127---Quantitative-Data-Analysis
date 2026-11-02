@@ -1,6 +1,0 @@
-"0",""
-"0","# load in our libraries"
-"0","library(tidyverse)"
-"0",""
-"0","# Read in our data"
-"0","listings <- read_csv(""listings_edinburgh.csv"") "

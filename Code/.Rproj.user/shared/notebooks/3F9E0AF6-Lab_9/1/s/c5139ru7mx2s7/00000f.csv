@@ -1,3 +1,0 @@
-"0","m4 <- listings %>%"
-"0","  lm(price ~ room_type + property_type + bathrooms + bedrooms + accommodates + review_scores_rating, "
-"0","     data = .) "
