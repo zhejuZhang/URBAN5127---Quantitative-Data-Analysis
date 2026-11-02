@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URBAN5127 - 考核1：定量数据分析研究论文（中文版）</title>
+  <style>
+    body { max-width: 900px; margin: 2rem auto; padding: 0 1.25rem; color: #24292f; font: 16px/1.75 system-ui, "Microsoft YaHei", sans-serif; }
+    h1, h2 { line-height: 1.35; }
+    h1 { border-bottom: 1px solid #d8dee4; padding-bottom: .5rem; }
+    li { margin: .35rem 0; }
+    pre { overflow-x: auto; padding: 1rem; background: #f6f8fa; }
+    .note { padding: .8rem 1rem; border-left: 4px solid #0969da; background: #f6f8fa; }
+  </style>
+</head>
+<body>
+<h1>URBAN5127：考核1——定量数据分析研究论文</h1>
+
+<h2>概述</h2>
+<p>本课程旨在教授定量数据分析，因此本项作业将评估你分析定量数据的能力。你需要选择合适的数据，提出研究问题，确定因变量和自变量，并运用课程中学到的技能进行分析，随后将结果写成论文。论文还应包含一段反思，说明你认为自己的表现如何。</p>
+<p>作业通过 Moodle 提交。提交截止日期请查看 Moodle。</p>
+
+<h2>格式</h2>
+<p>论文上限为 <strong>4,000 词</strong>。词数和页数限制的具体要求请查看课程 Moodle 页面。</p>
+<p>论文须在 RStudio 中撰写，并使用 R Markdown 或 Quarto 编译。你需要同时提交源文件（<code>.Rmd</code> 或 <code>.qmd</code>）和编译后的成品（建议 HTML，也可提交 Word 或 PDF）。成品中包含的代码不计入词数；反思陈述也可以不计入词数。</p>
+<p>相关资料：<a href="http://www.stat.cmu.edu/~cshalizi/rmarkdown/">使用 R Markdown 撰写课程报告</a>、<a href="https://quarto.org/docs/computations/r.html">在 RStudio 中使用 R Markdown</a>、<a href="https://rstudio.github.io/cheatsheets/html/rmarkdown.html">R Markdown 速查表</a>和 <a href="https://rstudio.github.io/cheatsheets/html/quarto.html">Quarto 速查表</a>。课程的大部分教程都会使用 R Markdown 或 Quarto。以这种方式撰写符合定量研究的最佳实践，有助于管理分析和写作，也能提高研究的可复现性。</p>
+<p><strong>请注意：</strong>若未同时提交 R Markdown/Quarto 源文件及成功编译的版本，可能无法获得相应分数。</p>
+<p>如需统计 R Markdown 文档的词数，可以使用<a href="https://github.com/benmarwick/wordcountaddin">词数统计插件</a>。首先确认已安装 <code>devtools</code>；你可能还需要安装 <a href="https://cran.r-project.org/bin/windows/Rtools/">RTools</a>。安装完成后运行：</p>
+<pre><code>devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)</code></pre>
+<p>随后在 RStudio 的 Addins 菜单中选择相应选项即可统计词数。该插件提供两种统计方法，可任选其一。如果插件无法运行，也可以使用其他方法，例如将正文粘贴到 Microsoft Word 中统计。</p>
+<p>作业中任何位置都不得出现你的姓名；可以使用学号。请将文件名保存为学号和课程名称，例如 <code>1234567_URBAN5127.html</code>。提交前请确认文件正确且确为需要评分的版本。截止时间之后对提交内容作出的更改将被视为迟交，并按规定扣分；检查提交内容是你的责任。</p>
+
+<h2>内容</h2>
+<p>论文应包含：</p>
+<ul>
+  <li>引言：提出研究问题，说明研究理由，并引用相关文献；</li>
+  <li>描述性统计；</li>
+  <li>数据可视化；</li>
+  <li>回归模型；</li>
+  <li>回归模型设定检验；</li>
+  <li>讨论回归假设及其是否成立；</li>
+  <li>研究发现总结；</li>
+  <li>反思陈述：说明你认为本作业应获得什么等级。</li>
+</ul>
+<p>本作业并非要求机械地生成 R 输出，而是考查你能否选择恰当的数据和方法来回答研究问题，并能否批判性地解释检验或方法的输出。论文应重点讨论回归模型。回归分析在课程预期学习成果中被明确列出，因此在评分中占有重要比重。</p>
+<p>反思陈述应明确说明你认为作品应获得的等级及理由，也可以补充对作业过程的反思。评分标准如下文所述。你可以在<a href="https://www.gla.ac.uk/myglasgow/policy/regulations-current/general/assessment-reg/">格拉斯哥评分方案1</a>标题下查看各等级及其说明。反思的目的是帮助你尝试从评分者的角度批判性地评估自己的作品。如果使用了 AI 工具，必须说明使用情况，并反思工具的使用，例如：使用了什么工具、如何使用、如何检查输出是否合理，以及工具是否对你有帮助。</p>
+
+<h2>评分</h2>
+<p>本作业旨在评估你在多大程度上达成本课程的预期学习成果。学习成果包括：</p>
+<ul>
+  <li>管理、可视化、汇总并呈现单变量和双变量数据；</li>
+  <li>构建稳健的线性回归模型；</li>
+  <li>检验涉及不同测量层级（例如区间变量、二元变量和分类变量）的假设；</li>
+  <li>使用 R 对单变量、双变量关联和线性回归进行定量分析；</li>
+  <li>从社会科学视角出发，运用可用数据批判性地评估理论、检验假设并回答实质性研究问题，且不局限于课程示例；</li>
+  <li>描述定量方法，并清晰、简洁地解释和撰写定量分析结果。</li>
+</ul>
+
+<h2>数据</h2>
+<p>你可以自行选择数据，但请谨慎选择：数据选择不当可能使你难以完成高质量作业。考虑以下问题：</p>
+<ul>
+  <li>数据是否适合回答你的研究问题？</li>
+  <li>数据是否支持回归分析？例如，你需要一个连续型因变量。</li>
+  <li>观测数量是否足够？可能至少需要 200 个观测值，具体将在课程中讨论。</li>
+  <li>数据质量是否足够好？数据是否有完善的文档说明？</li>
+  <li>数据是否为横截面数据？本课程只讨论横截面分析，因此作业也应使用横截面数据。</li>
+</ul>
+<p>不要使用纵向数据，即对同一分析单位进行重复测量的数据；不要使用 Kaggle.com 上的数据。</p>
+<p>建议从 <a href="https://www.ukdataservice.ac.uk/">UK Data Service</a> 选择数据集。以下数据集都适合作为选项：</p>
+<ul>
+  <li>苏格兰家庭调查（Scottish Household Survey）</li>
+  <li>英格兰健康调查（Health Survey for England）</li>
+  <li>苏格兰健康调查（Scottish Health Survey）</li>
+  <li>国家能源效率数据框架（National Energy Efficiency Data-Framework）</li>
+  <li>英格兰住房调查（Survey of English Housing）</li>
+  <li>生活成本与食品调查（Living Costs and Food Survey）</li>
+  <li>国家出行调查（National Travel Survey）</li>
+  <li>Understanding Society</li>
+</ul>
+<p>请注意，Understanding Society 是纵向数据源。如果选择该数据，建议选取其中某一特定波次，以便进行横截面分析。</p>
+<p>你也可以使用其他数据集，但最好先与导师讨论其适用性。强烈建议不要使用（季度）劳动力调查、Inside Airbnb 数据，也不要研究收入或工资差异。课程学习成果明确要求研究超越讲座中的示例；你的研究与讲座和教程越相似，表现可能越差。如果内容过于相似，作业可能无法获得相应分数。</p>
+<p>选择自己感兴趣的主题有助于保持动力。请注意，同一份作业不能重复用于其他课程的考核；选择研究问题和数据时应将此纳入考虑。不过，你可以将本作业作为其他研究的参考。</p>
+
+<h2>获取帮助</h2>
+<p>教程课会留出时间供你完成作业，因此你可以向授课教师寻求指导。教师不会直接告诉你该怎么做，但会帮助你找到正确方向。有关作业正式要求的问题，请联系课程负责人 David McArthur。</p>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URBAN5127 - 形成性考核1：研究计划草案（中文版）</title>
+  <style>
+    body { max-width: 900px; margin: 2rem auto; padding: 0 1.25rem; color: #24292f; font: 16px/1.75 system-ui, "Microsoft YaHei", sans-serif; }
+    h1, h2 { line-height: 1.35; }
+    h1 { border-bottom: 1px solid #d8dee4; padding-bottom: .5rem; }
+    li { margin: .35rem 0; }
+    pre { overflow-x: auto; padding: 1rem; background: #f6f8fa; }
+    .note { padding: .8rem 1rem; border-left: 4px solid #0969da; background: #f6f8fa; }
+  </style>
+</head>
+<body>
+<h1>URBAN5127：形成性考核1——定量数据分析研究计划草案</h1>
+
+<h2>概述</h2>
+<p>课程期间，你可以提交一份研究项目计划草案；该项目将用于总结性考核。形成性考核的提交篇幅为 <strong>1,000 词</strong>。提交计划草案后，你将收到导师的书面反馈，了解研究项目是否适合开展。</p>
+<p>形成性考核通过 Moodle 提交。作业截止日期请查看 Moodle。</p>
+<p>虽然形成性考核不会直接影响你的总评成绩，但你可以获得关于研究项目适用性的反馈，这将帮助你巩固所学内容，并推进总结性作业。由于形成性考核是有明确截止日期的反馈流程的一部分，除非遇到不可避免的特殊情况，否则不提供延期。可以提交尚未完成的形成性作业，因为此项考核侧重于帮助你改进和发展研究计划。</p>
+
+<h2>格式</h2>
+<p>形成性考核的格式与总结性考核相似。你需要在 RStudio 中撰写论文，并使用 R Markdown 或 Quarto 编译；同时提交源文件（<code>.Rmd</code> 或 <code>.qmd</code>）和编译后的成品（建议 HTML，也可提交 Word 或 PDF）。成品中的代码不计入词数；反思陈述也可以不计入词数。</p>
+<p>相关资料：<a href="http://www.stat.cmu.edu/~cshalizi/rmarkdown/">使用 R Markdown 撰写课程报告</a>、<a href="https://quarto.org/docs/computations/r.html">在 RStudio 中使用 R Markdown</a>、<a href="https://rstudio.github.io/cheatsheets/html/rmarkdown.html">R Markdown 速查表</a>和 <a href="https://rstudio.github.io/cheatsheets/html/quarto.html">Quarto 速查表</a>。课程的大部分教程都会使用 R Markdown 或 Quarto。以这种方式撰写符合定量研究的最佳实践，有助于管理分析和写作，也能提高研究的可复现性。</p>
+<p>如需统计 R Markdown 文档的词数，可以使用<a href="https://github.com/benmarwick/wordcountaddin">词数统计插件</a>。首先确认已安装 <code>devtools</code>；你可能还需要安装 <a href="https://cran.r-project.org/bin/windows/Rtools/">RTools</a>。安装完成后运行：</p>
+<pre><code>devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)</code></pre>
+<p>随后在 RStudio 的 Addins 菜单中选择相应选项即可统计词数。该插件提供两种统计方法，可任选其一。如果插件无法运行，也可以使用其他方法，例如将正文粘贴到 Microsoft Word 中统计。</p>
+
+<h2>内容</h2>
+<p>研究计划草案应包含：</p>
+<ul>
+  <li>背景信息，包括研究问题、研究理由和相关文献；</li>
+  <li>对所选数据集的简要说明，包括因变量和自变量的描述；指出你重点关注的一个自变量；并提供足够信息，使读者能够找到并获取所用数据集；</li>
+  <li>因变量的描述性统计，包括一张恰当的图表；</li>
+  <li>一张展示因变量与重点自变量之间关系的图表；</li>
+  <li>简短的反思陈述。</li>
+</ul>
+<p>研究计划中展示的每一项结果（例如描述性统计、单变量图和双变量图）都应附有简短说明，解释其所呈现的结果。</p>
+<p>反思陈述应简要讨论你完成形成性考核的体验。你可以思考：过程中的哪些部分令你愉快？遇到了哪些挑战，又是如何克服的？继续推进项目时，哪些方面可以改进？这段反思旨在帮助你批判性地评估自己的工作，并逐步完善研究项目。</p>
+
+<h2>数据</h2>
+<p>你可以自行选择数据，但请谨慎选择：数据选择不当可能使你难以完成高质量作业。考虑以下问题：</p>
+<ul>
+  <li>数据是否适合回答你的研究问题？</li>
+  <li>数据是否支持回归分析？例如，你需要一个连续型因变量。</li>
+  <li>观测数量是否足够？可能至少需要 200 个观测值，具体将在课程中讨论。</li>
+  <li>数据质量是否足够好？数据是否有完善的文档说明？</li>
+  <li>数据是否为横截面数据？本课程只讨论横截面分析，因此作业也应使用横截面数据。</li>
+</ul>
+<p>不要使用纵向数据，即对同一分析单位进行重复测量的数据；不要使用 Kaggle.com 上的数据。</p>
+<p>建议从 <a href="https://www.ukdataservice.ac.uk/">UK Data Service</a> 选择数据集。以下数据集都适合作为选项：</p>
+<ul>
+  <li>苏格兰家庭调查（Scottish Household Survey）</li>
+  <li>英格兰健康调查（Health Survey for England）</li>
+  <li>苏格兰健康调查（Scottish Health Survey）</li>
+  <li>国家能源效率数据框架（National Energy Efficiency Data-Framework）</li>
+  <li>英格兰住房调查（Survey of English Housing）</li>
+  <li>生活成本与食品调查（Living Costs and Food Survey）</li>
+  <li>国家出行调查（National Travel Survey）</li>
+  <li>Understanding Society</li>
+</ul>
+<p>请注意，Understanding Society 是纵向数据源。如果选择该数据，建议选取其中某一特定波次，以便进行横截面分析。</p>
+<p>你也可以使用其他数据集，但最好先与导师讨论其适用性。强烈建议不要使用（季度）劳动力调查、Inside Airbnb 数据，也不要研究收入或工资差异。课程学习成果明确要求研究超越讲座中的示例；你的研究与讲座和教程越相似，表现可能越差。如果内容过于相似，作业可能无法获得相应分数。如有疑问，请与讲师或导师讨论。</p>
+<p>选择自己感兴趣的主题有助于保持动力。请注意，同一份作业不能重复用于其他课程的考核；选择研究问题和数据时应将此纳入考虑。不过，你可以将本作业作为其他研究的参考。</p>
+
+<h2>获取帮助</h2>
+<p>教程课会留出时间供你完成作业，因此你可以向授课教师寻求指导。教师不会直接告诉你该怎么做，但会帮助你找到正确方向。有关作业正式要求的问题，请联系课程负责人 David McArthur。</p>
+</body>
+</html>
