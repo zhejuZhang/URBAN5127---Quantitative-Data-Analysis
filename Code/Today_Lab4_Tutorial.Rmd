@@ -1,0 +1,106 @@
+---
+title: "今天的课堂练习：Lab 4 与 Tutorial"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+date: "2026-10-30"
+---
+
+本文件直接使用 Lab 2 保存的 RDS。Lab 4 的六项任务和截图中的四项任务分开执行。
+价格单位按课程材料为英镑。每个代码块可以单独运行，也可以点击 Knit 生成 HTML。
+
+## 1. 读取已经清洗的数据
+
+预期：13,647 行，10 列。价格范围 25–1,000，浴室数范围 0–5。
+
+```{r}
+# Updated: uses the supplied cleaned RDS rather than reconstructing from CSV.
+# Run once if needed: install.packages("tidyverse")
+library(tidyverse)
+# Read the dataset already cleaned in Lab 2.
+listings_clean <- readRDS(
+  "listings_clean.rds"
+)
+glimpse(listings_clean)
+colSums(is.na(listings_clean))
+range(listings_clean$price)
+range(listings_clean$bathrooms)
+count(listings_clean, room_type)
+
+```
+
+## 2. Lab 4：六项探索性分析练习
+
+```{r}
+
+p1 <- ggplot(listings_clean, aes(room_type, price)) +
+  geom_boxplot() + labs(x = "Room type", y = "Price (£)") + theme_minimal()
+print(p1)
+print(p1 + scale_y_log10())
+print(ggplot(listings_clean, aes(bedrooms)) + geom_histogram(binwidth = 1, boundary = -0.5))
+p2 <- listings_clean |> filter(!is.na(bedrooms)) |>
+  ggplot(aes(factor(bedrooms))) + geom_bar() +
+  labs(x = "Bedrooms", y = "Listings") + theme_minimal()
+print(p2)
+print(count(listings_clean, bedrooms))
+p3 <- listings_clean |> drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) + geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm", se = TRUE, colour = "blue") +
+  labs(x = "Average review score", y = "Price (£)") + theme_minimal()
+print(p3)
+p4 <- ggplot(listings_clean, aes(fct_rev(fct_infreq(property_type)))) +
+  geom_bar() + coord_flip() +
+  labs(x = "Property type", y = "Listings") + theme_minimal()
+print(p4)
+top10_neighb <- listings_clean |> count(neighbourhood_cleansed, name = "Count") |>
+  arrange(desc(Count), neighbourhood_cleansed) |> slice_head(n = 10)
+print(top10_neighb)
+p6 <- ggplot(top10_neighb, aes(fct_reorder(neighbourhood_cleansed, Count), Count)) +
+  geom_col(fill = "skyblue") + coord_flip() +
+  labs(x = NULL, y = "Listings", title = "Top 10 neighbourhoods") + theme_minimal()
+print(p6)
+
+```
+
+## 3. 课堂截图：两类房源价格比较
+
+```{r}
+
+listings_no_shared <- listings_clean |>
+  filter(room_type != "Shared room") |> droplevels()
+print(count(listings_no_shared, room_type))
+p_tutorial <- ggplot(listings_no_shared, aes(room_type, price)) +
+  geom_boxplot() + labs(x = "Room type", y = "Price (£)") + theme_minimal()
+print(p_tutorial)
+price_summary <- listings_no_shared |> group_by(room_type) |>
+  summarise(n = n(), mean_price = mean(price), sd_price = sd(price),
+            median_price = median(price), .groups = "drop")
+print(price_summary)
+price_test <- t.test(price ~ room_type, data = listings_no_shared)
+print(price_test)
+
+```
+
+## 4. 可选：保存结果
+
+```{r section4, message=FALSE}
+
+# ggsave("price_by_room.png", p_tutorial, width = 7, height = 5, dpi = 300)
+# write_csv(price_summary, "price_summary.csv")
+# saveRDS(listings_clean, "listings_clean.rds")
+
+```
+
+## 5. 对照结果
+
+排除共享房间后共 13,578 条。整套房 8,677 条，均价 £142.58，标准差 £155.85。
+独立房间 4,901 条，均价 £61.23，标准差 £78.32。
+Welch t 检验 t = 40.419，df 约 13,419，p < 2.2e-16。
+整套房减独立房间的平均价差约 £81.35，95% 置信区间为 £77.40–£85.29。
+这是筛选后样本的未调整比较，不能解释为因果效应。
+
+## 6. 自己的项目
+
+按课件 Part 2，与导师讨论数据集、因变量和自变量。检查变量类型、类别、缺失值，
+按研究问题决定子集、筛选和类型转换。课程材料未在已提供页面中规定提交方式或截止时间。

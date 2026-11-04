@@ -1,0 +1,175 @@
+---
+title: "Hand_Lab_6"
+output: html_document
+date: "2026-10-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+listings_clean <- readRDS("listings_clean.rds")
+glimpse(listings_clean)
+```
+
+```{r}
+count(listings_clean, room_type)
+```
+
+```{r}
+listings_no_shared <- listings_clean |>
+  filter(room_type != "Shared room") |>
+  droplevels()
+
+count(listings_no_shared, room_type)
+```
+
+```{r}
+# quick check
+levels(listings_subset$room_type)
+```
+
+
+```{r}
+ggplot(listings_no_shared, aes(room_type, price)) +
+  geom_boxplot() +
+  labs(x = "Room type", y = "Price (£)", caption = "Source: InsideAirbnb.com")
+```
+
+```{r}
+price_density <- ggplot(
+  listings_no_shared,
+  aes(x = price, fill = room_type)
+) +
+  geom_density(alpha = 0.5, colour = "black") +
+  scale_fill_manual(
+    values = c(
+      "Entire home/apt" = "pink",
+      "Private room" = "skyblue"
+    )
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 1000, by = 250)
+  ) +
+  labs(
+    title = "Distribution of price of Airbnb listings in Edinburgh",
+    subtitle = "Prices restricted to range £25 to £1,000",
+    x = "Price (£)",
+    y = "Probability density",
+    fill = "Room type",
+    caption = "Source: InsideAirbnb.com"
+  ) +
+  theme_gray()
+
+print(price_density)
+```
+
+```{r}
+listings_no_shared |>
+  group_by(room_type) |>
+  summarise(
+    n = n(),
+    mean_price = mean(price),
+    sd_price = sd(price),
+    .groups = "drop"
+  )
+
+```
+
+```{r}
+library(knitr)
+
+listings_subset |>
+  group_by(room_type) |>
+  summarise(
+    count=n(),
+    mean_price=round(mean(price),2),
+    sd_price= round(sd(price),2),
+    variance=round(var(price),2)
+  ) |> 
+  
+  kable()
+```
+
+```{r}
+t.test(price ~ room_type, data = listings_subset)
+```
+
+```{r}
+leveneTest(price ~ room_type)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+p1 <- ggplot(listings_clean, aes(room_type, price)) +
+  geom_boxplot() + labs(x = "Room type", y = "Price (£)") + theme_minimal()
+print(p1)
+```
+
+```{r}
+print(p1 + scale_y_log10())
+```
+
+```{r}
+print(ggplot(listings_clean, aes(bedrooms)) + geom_histogram(binwidth = 1, boundary = -0.5))
+```
+
+```{r}
+p2 <- listings_clean |> filter(!is.na(bedrooms)) |>
+  ggplot(aes(factor(bedrooms))) + geom_bar() +
+  labs(x = "Bedrooms", y = "Listings") + theme_minimal()
+print(p2)
+```
+
+```{r}
+print(count(listings_clean, bedrooms))
+```
+
+```{r}
+p3 <- listings_clean |> drop_na(review_scores_rating) |>
+  ggplot(aes(review_scores_rating, price)) + geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm", se = TRUE, colour = "blue") +
+  labs(x = "Average review score", y = "Price (£)") + theme_minimal()
+print(p3)
+```
+
+```{r}
+p4 <- ggplot(listings_clean, aes(fct_rev(fct_infreq(property_type)))) +
+  geom_bar() + coord_flip() +
+  labs(x = "Property type", y = "Listings") + theme_minimal()
+print(p4)
+```
+
+```{r}
+top10_neighb <- listings_clean |> count(neighbourhood_cleansed, name = "Count") |>
+  arrange(desc(Count), neighbourhood_cleansed) |> slice_head(n = 10)
+print(top10_neighb)
+```
+
+```{r}
+p6 <- ggplot(top10_neighb, aes(fct_reorder(neighbourhood_cleansed, Count), Count)) +
+  geom_col(fill = "skyblue") + coord_flip() +
+  labs(x = NULL, y = "Listings", title = "Top 10 neighbourhoods") + theme_minimal()
+print(p6)
+```
+
+
