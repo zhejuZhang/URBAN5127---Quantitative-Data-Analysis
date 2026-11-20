@@ -1,0 +1,500 @@
+---
+title: "Lab_7"
+author: "Plamena Panayotova"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: cosmo
+    code_folding: hide
+date: "`r Sys.Date()`"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# 1. Load libraries:
+
+library(tidyverse)
+library(knitr)
+library(kableExtra) # need this for table formatting
+library(flextable) # need this for table formatting
+library(vtable) # need this for the summary statistics table, function "st"
+
+# Run in console: install.packages("texreg", repos = "https://cloud.r-project.org/")
+
+library(texreg) # need this to build a table with combined model results in html
+
+# 2.  Read in data:
+
+
+
+# 2.  Read in data:
+
+listings_clean <- readRDS("listings_clean.rds")
+
+
+```
+
+
+# Modelling strategy:
+
+
+>**Model summary - The price of an AirBnB listing in Edinburgh can be predicted (explained) by room type, even when controlling for other factors (number of bedrooms and bathrooms, review scores and property type).**
+
+
+> **RQ - Is there an association between AirBnB listing price and room type in Edinburgh?**
+
+
+> **Null hypothesis - Among Airbnb listings in Edinburgh, the average price is the same for entire homes, private rooms, and shared rooms.**
+
+> **Alternative hypothesis - There is a difference between the average price of an entire home, a private room and shared room among AirBnB listings in Edinburgh**
+
+**Note** - we don't specify direction of comparison or order (price of home>private room>sharedroom) in the Alternative Hypothesis since we can't establish these in ANOVA - there are of course other methods available that allow you to do this - so be careful how you state the Alternative Hypothesis).
+
+The general pattern should be:
+
+Null hypothesis: The predictor has no relationship with the DV once other variables are controlled for.
+
+Alternative hypothesis: The predictor does have a relationship with the DV, controlling for others.
+
+# Exploring our variables:
+
+## Dependent variable:
+
+```{r}
+listings_clean |>
+  ggplot(aes(price)) +
+  geom_histogram(colour="deepskyblue4", fill="deepskyblue3", binwidth=10) +
+  labs(title = "Distribution of prices of Airbnb listings in Edinburgh",
+       subtitle = "Prices restricted to range £25 to £1,000",
+       x = "Price (£)",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com") +
+  scale_x_continuous(breaks = seq(0, 1000, by = 200)) +
+  theme_minimal()
+
+# What's the most important thing about the distribution of price?
+```
+
+## DV and IV pair:
+
+```{r}
+
+listings_clean |>
+  ggplot(aes(price, fill = room_type)) +
+  geom_density(alpha = 0.8) +
+  labs(title = "Distribution of prices of Airbnb listings in Edinburgh by room type",
+       subtitle = "Prices restricted to range £25 to £1,000",
+       x = "Price (£)",
+       y = "Probability density",
+       caption = "Source: InsideAirbnb.com",
+       fill = "Room type") +
+  scale_x_continuous(breaks = seq(0, 1000, by = 200)) +
+  theme_minimal()
+
+
+
+# What's the most important thing to notice in this density plot?
+
+
+
+```
+
+```{r}
+# Price per room type:
+
+listings_clean |>
+  group_by(room_type) |>
+  summarise(
+    count= n(),
+    mean = round(mean(price), 2),
+    sd = round(sd(price), 2),
+    variance = round(var(price), 2),
+    min = min(price),
+    max = max(price),
+    median = round(median(price), 2),
+    IQR = round(IQR(price), 2),
+    Q1 = round(quantile(price, 0.25), 2),  
+    Q3 = round(quantile(price, 0.75), 2)
+  )
+
+```
+
+## Independent variables:
+
+```{r}
+
+# Room type:
+
+listings_clean |>
+  count(room_type) |>  # Count frequencies of each level
+  mutate(
+    Percent = round(n / sum(n) * 100, 1),  # Calculate percentage
+    CumulativePercent = cumsum(Percent)  # Calculate cumulative percentage
+  ) |>
+  arrange(room_type) 
+
+# What's the most important thing this table shows?
+
+```
+
+```{r}
+
+# Property type:
+
+listings_clean |>
+  count(property_type) %>%  # Count frequencies of each level
+  mutate(
+    Percent = round(n / sum(n) * 100, 2),  # Calculate percentage
+  ) |>
+  arrange(desc(n)) |>
+  head(10)
+
+```
+
+```{r}
+
+# Summary statistics for numeric variables:
+
+listings_clean |> st(vars = c("price", "review_scores_rating", "bathrooms", "bedrooms", "accommodates")) 
+
+```
+
+> **Bottom line - skewed and sparse data cause problems when we construct models. Problems are inevitable - and soluble!**
+
+# Model 1 (a basic bivariate model):
+
+```{r}
+
+# Build model 1
+m1 <- lm(price ~ room_type, listings_clean) 
+
+# And pass to summary function to see regression output
+m1 |> summary()
+
+```
+
+## Model 1 interpretation:
+
+
+**1. Overall model performance/significance:**
+
+1.1. F-statistic - this is a ratio. It compares the explained variance (from the regression model) to the unexplained variance (from the residuals). It tests whether the model as a whole explains a significant proportion of the variance in the dependent variable. The formula is:
+
+$$
+F= \frac{(SS(model)/p)}{(SS(residual)/(n-p-1))}
+$$
+
+
+where 
+
+
+**SSM** - Model sum of squares (SST-SSR) 
+
+**SSR** - Residual sum of squares 
+
+**p** - number of predictors 
+
+**n** - number of observations 
+
+If the model performs well, then the F ratio will be big, i.e., there will be very small SSR and the model will do much better than a mean only model. In our case, the F-statistic is not especially large but it's statistically significant.
+
+1.2 R-squared statistic - 
+
+$$
+R^2= 1- \frac{SS(Model)}{SS(Total)}
+$$
+
+The R-squared value compares the model sum of squares to the sum of squares of an intercept (mean only) model. In other words, this compares the sum of squared errors for the model equation versus the sum of squared errors for an equation without the IVs, just the intercept. It tell us by how much the sum of squared error reduces when we add the predictors and (put less precisely) how much for the variation in DV can be explained by the IVs.
+
+In our case, the R-squared value is 0.08 which is 8%. This means that using the predictors to predict price yields 8% reduction in the sum of squared errors. Roughly speaking, we can only explain about 8% of the variation in price by looking at room_type.
+
+
+**2. Coefficients:**
+
+2.1. *Intercept:* According to our model, the price of an entire apartment (AirBnB) in Edinburgh is estimated to be about 143 pounds, on average.
+
+2.2. *Coefficient for "Private room":* On average, the price of a private room (AirBnB) in Edinburgh is about 81 pounds less than the price of an entire apartment.
+
+2.3. *Coefficient for "Shared room":* On average, the price of a shared room (AirBnB) in Edinburgh is about 100 pounds more than the price of an entire apartment.
+
+2.4 *Significance of the coefficients:* they are all statistically significant, so we're confident that the differences observed in our sample are UNlikely to have occurred by chance.
+
+
+**3. Residuals **
+
+When doing linear regression we make assumptions about the residuals (what's left out by the model). In OLS specifically, we assume that the differences between the observed values and the predicted values from the model, i.e, the residuals, are normally distributed with a mean of 0 for every given value of the IVs. A mean of 0 means than on average, the model predicts correctly. Since, however, no model is a perfect model, there will be residuals whose distribution mean is not equal to 0. What we can then aim for is to have them unbiased, i.e., we don't want particular observations to have very very high residuals while others very very low residuals. In the output we have the median and IQR of the residuals. The distribution in the residuals here is is not perfectly centred on median 0 but still okay and has a heavy right skew.
+
+**Residual = observed value - predicted value.**
+
+The residual will be positive when the observed values are higher, i.e., when the model **UNDER**estimates. Since we have some very high positive residuals, we can conclude that our model tends to UNDERestimate AirBnB prices.
+
+### Further useful explanations:
+
+*1. Normal Distribution (N)*
+
+N(0,$\sigma$) represents a normal distribution, which is a symmetric, 
+bell-shaped distribution.
+Assuming the errors follow a normal distribution implies that most of the 
+error values (or residuals) are concentrated around the mean, 
+with fewer values as you move away from the mean in both directions.
+
+*2. Mean of 0*
+
+N(0,$\sigma$) means that the errors have a mean (or expected value) of 0.
+This zero mean assumption implies that the errors are equally likely 
+to be positive or negative. In other words, there's no systematic 
+bias in the errors.
+It also means that, on average, the model’s predictions are correct, 
+even though individual predictions may have positive or negative deviations.
+
+*3. Standard Deviation* 
+
+The standard deviation in N(0,$\sigma$) indicates the spread or variability of the 
+errors around the mean.
+A larger $\sigma$ means more spread (higher variability) in the errors, suggesting that 
+individual predictions may deviate more widely from the true values.
+A smaller $\sigma$ implies that the errors are closely clustered around the mean, 
+indicating that the model's predictions are generally close to the true values.
+
+*Why This Matters in a Linear Model*
+
+This assumption about the error term is critical for *statistical inference* 
+in linear regression. When errors are normally distributed with mean 0 
+and a constant standard deviation $\sigma$, several important properties hold:
+
+*Confidence Intervals and Hypothesis Testing:* This assumption allows 
+for valid calculation of confidence intervals and hypothesis tests for 
+the model parameters (like slopes and intercepts).
+
+*Ordinary Least Squares (OLS) Properties:* If the errors are normally 
+distributed, OLS estimators are not only unbiased but also the most efficient 
+among all linear unbiased estimators (Gauss-Markov theorem). 
+This means the OLS estimates are as close as possible, on average, 
+to the true parameter values.### A note on the output:
+
+*Residuals median* - A median close to zero is a good sign, 
+as it suggests that the residuals are centered around zero, 
+indicating that the model’s predictions do not systematically 
+overestimate or underestimate.
+
+*Spread of typical residuals:* 
+The values between the 1Q and 3Q cover the central 50% 
+of residuals, giving you an idea of how much most 
+predictions deviate from the actual values.
+
+*t-value*: The t-value in the output from a linear regression summary 
+refers to the test statistic used to determine if the estimated coefficient 
+(such as the intercept or slope) is significantly different from zero. 
+It is a measure of how many standard errors the estimated 
+coefficient is away from zero. The t-value helps you assess whether 
+a particular variable has 
+a significant effect on the outcome variable.
+t-value is calculated: t-value = estimate/SE
+Larger t-values indicate that the coefficient is significantly different from 0, 
+i.e. IV variable in our model helps predict the DV in the population.
+
+*Residual SE*: The residual standard error tells us the average amount that the 
+actual values of Y (the dots) differ from the predictions (the line) 
+in units of Y. In general, we want the smallest residual standard error 
+possible, because that means our model’s prediction line 
+is very close to the actual values, on average.
+
+*Multiple R-squared*: The Multiple R-squared value is most often used for 
+simple linear regression (one predictor). It tells us what percentage of 
+the variation within our dependent variable that the independent variable 
+is explaining. In other words, it’s another method to determine 
+how well our model is fitting the data.
+
+*F-statistic*: When running a regression model, either simple or multiple, 
+a hypothesis test is being run on the global model. The null hypothesis is 
+that there is no relationship between the dependent variable and the 
+independent variable(s) and the alternative hypothesis is 
+that there is a relationship. *Said another way, the null hypothesis is 
+that the coefficients for all of the variables in your model are zero.* 
+The alternative hypothesis is that **at least one** of them is NOT zero. 
+The F-statistic and overall p-value help us determine the result of this test. 
+Looking at the F-statistic alone can be a little misleading depending on how 
+many variables are in your test. If you have a lot of independent variables, 
+it’s common for an F-statistic to be 
+close to one and to still produce a p-value where we would reject 
+the null hypothesis. However, for smaller models, a larger F-statistic 
+generally indicates that the null hypothesis should be rejected. 
+A better approach is to utilize the p-value that is associated with the 
+F-statistic. Again, in practice, a p-value below 0.05 generally indicates 
+that you have at least one coefficient in your model that isn’t zero.
+
+*Source*: https://towardsdatascience.com/understanding-linear-regression-output-in-r-7a9cbda948b3
+
+## Model 1 residual diagnostics:
+
+```{r}
+
+# Extract residuals:
+residuals_m1 <- residuals(m1)
+
+# Check normality of residuals: run the below four lines SIMULTANEOUSLY.
+par(mfrow = c(1, 2))
+hist(residuals_m1, main = "Histogram of Residuals", col = "lightblue", breaks = 10)
+qqnorm(residuals_m1, main = "Q-Q Plot of Residuals")
+qqline(residuals_m1, col = "red")
+
+
+```
+**The histogram** shows the residuals combined across the three room_type groups. \
+
+## The QQ plot:
+
+**1. X-axis: "Theoretical Quantiles"** \
+These are the quantiles we would expect if the residuals came from a perfect normal distribution. \
+**2. Y-axis: "Sample Quantiles"** \
+These are the actual ordered residuals from the model.The plot then compares the actual residual distribution to the theoretical normal distribution.
+
+The plots clearly show that the residuals (unexplained variance) are not normally distributed - there are very big positive residuals (see skewed histogram) and the shape of the distribution of residuals deviates greatly from a "perfect" normal distribution (if both were very similar, then the residuals will fall on the red line in the QQ plot). \
+
+
+# Model 2 (a multivariate model):
+
+
+```{r}
+
+m2 <- lm(price ~ room_type + property_type, listings_clean) 
+
+m2 |>  summary()
+
+summary(listings_clean$property_type)
+
+
+
+```
+## Model 2 interpretation:
+
+**Reference categories** - entire home/apartment (for room type) and aparthotel (for property type). Aparthotel is the first category and so chosen by default in R. It's a very bad reference category to use as a reference category since it's very sparsely populated. Need to change this. 
+
+*Intercept* - In this model, the intercept gives us the estimated average price of a property classed as entire home and aparthotel. All other coefficients measure differences between the listed category and the respective reference category, while controlling for the other variable. For example,
+
+*Coefficient* - Holding property type constant, private rooms cost £90.27 less than entire homes, on average.
+
+*Coefficient* - Apartments are £52.40 cheaper than aparthotels, on average (controlling for room type). But this difference is not statistically significant.
+
+
+## Revising model 2: changing the reference category to "Apartment" to improve reliability of estimates:
+
+```{r}
+# Re-factor reference level: recode to 'Apartment' for ease of interpretation
+
+listings_clean$property_type <- relevel(listings_clean$property_type, ref = "Apartment") 
+
+# Build model 2 again and then pass to summary function
+m2_2 <- lm(price ~ room_type + property_type,
+     listings_clean) 
+
+m2_2 |>  summary()
+
+```
+## Revising model 2: changing the levels of property_type:
+
+```{r}
+
+listings_clean <- listings_clean |> 
+  mutate(property_type = fct_collapse(property_type,
+                                      Bespoke = c("Aparthotel", "Barn", "Boat", "Casa particular (Cuba)", "Earth house", "Hut", "Loft", "Tiny house", "Windmill", "Other" ),
+                                      Apartment = c("Apartment", "Bed and breakfast", "Guest suite", "Serviced apartment", "Chalet", "Condominium"),
+                                      House = c("Bungalow", "Cottage", "Guesthouse", "House", "Townhouse", "Villa"),
+                                      Hotel = c("Boutique hotel", "Hotel"),
+                                      Rustic = c("Cabin", "Camper/RV", "Campsite", "Farm stay", "Hostel", "Tent")
+                                       )
+      )
+
+# Check:
+
+fct_count(listings_clean$property_type)
+
+```
+## Re-running model 2:
+
+
+```{r}
+
+m2_3 <- lm(price ~ room_type + property_type,
+     listings_clean) 
+
+m2_3 |>  summary()
+
+```
+
+**Here we can see that the F-statistic has increased but note we can't compare F-statistics across different models.**
+
+
+# Model 3:
+```{r}
+m3 <- lm(price ~ room_type + property_type + bathrooms +
+bedrooms + accommodates + review_scores_rating, listings_clean)
+
+m3 |> summary()
+```
+
+
+Ending with our final model, review_scores_rating is indeed a negative coefficient: for every unit increase in review_scores_rating (i.e. for every additional point in the review from 1-100), price goes down by 0.9379 or nearly £1, controlling for all other variables. Also, due to the missing values in this variable, our model has now dropped 2,534 observations. So we always need to keep an eye on this.
+
+## Model 3 residual diagnostics:
+
+```{r}
+
+# Extract residuals:
+residuals_m3 <- residuals(m3)
+
+# Check normality of residuals: run the below four lines SIMULTANEOUSLY.
+par(mfrow = c(1, 2))
+hist(residuals_m3, main = "Histogram of Residuals", col = "lightblue", breaks = 10)
+qqnorm(residuals_m3, main = "Q-Q Plot of Residuals")
+qqline(residuals_m3, col = "red")
+
+```
+
+# The three models together:
+
+```{r, results= "asis"}
+
+# Do not run the below code, this is just for the knitted html document.
+# You need to include results="asis" in your R Markdown chunk because htmlreg() produces raw HTML output, and by default, R Markdown escapes special characters (like <table> and <tr>), treating them as plain text rather than rendering them as a table. With results=asis, markdown will NOT escape the special characters.
+
+htmlreg(list(m1, m2_3, m3))
+
+```
+
+
+```{r, results="asis"}
+
+# Do not run.
+
+htmlreg(list(m1, m2_3, m3),
+          stars = 0.05,
+          digits = 2, 
+          caption = "Table 2: Regression results. Dependent variable: Price",
+          caption.above = TRUE,
+          groups = list("Room Type" = 2:3, "Property Type" = 4:7),
+          custom.coef.names = c("(Intercept)", "Private Room", "Shared Room", 
+                                "Bespoke", "Hotel", "House", "Rustic", 
+                                "Number of Bathrooms", "Number of Bedrooms", 
+                                "Accomodation capacity", "Review Score")
+)
+
+```
+
+
+```{r}
+# Example code for renaming levels:
+
+
+# listings_clean <- listings_clean |>
+#   mutate(room_type = recode(room_type, 
+#                             "entire_home" = "1. Entire home", 
+#                             "shared_room" = "2. Shared room", 
+#                             "private_room" = "3. Private room"))
+# 
+
+```
+

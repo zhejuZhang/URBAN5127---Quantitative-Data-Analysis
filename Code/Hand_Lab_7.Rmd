@@ -1,0 +1,158 @@
+---
+title: "Hand_Lab_7"
+output: html_document
+date: "2026-11-06"
+---
+
+Word count: 'r wordcountaddin::word_count()'
+devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# 0. 加载包与数据
+library(tidyverse)
+library(knitr)
+```
+
+
+```{r}
+listings_clean <- readRDS("listings_clean.rds")
+```
+
+
+```{r}
+listings_clean <- listings_clean |>
+  mutate(room_type = factor(room_type))
+
+
+# 1. 箱线图：价格如何随房型变化
+ggplot(listings_clean,
+       aes(x = room_type, y = price, fill = room_type)) +
+  geom_boxplot() +
+  labs(
+    title = "Price by Room Type",
+    x = "Room Type",
+    y = "Price (£)"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+# 2
+price_summary <- listings_clean |>
+  group_by(room_type) |>
+  summarise(
+    n = sum(!is.na(price)),
+    mean_price = mean(price, na.rm = TRUE),
+    sd_price = sd(price, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+knitr::kable(price_summary, digits = 2)
+
+```
+# 3. 显著性检验：不同房型平均价格有无显著差异
+# 沿用 Lab 5：排除 Shared room，只比较两组
+
+```{r}
+
+listings_subset <- listings_clean |>
+  filter(room_type %in%
+           c("Entire home/apt", "Private room")) |>
+  droplevels()
+
+# Welch 独立样本 t 检验
+t_result <- t.test(
+  price ~ room_type,
+  data = listings_subset
+)
+
+print(t_result)
+```
+
+```{r}
+aov(price ~ room_type, data = listings_clean) |> summary()
+```
+
+对每个value进行了解释说明
+
+```{r}
+lm(price ~ room_type, data= listings_clean) |> summary()
+```
+
+
+```{r}
+# 缺少图片生成
+```
+
+
+```{r}
+cor.test(~ price + review_scores_rating, data = listings_clean)
+```
+
+```{r}
+cor_result <- cor.text(~ price +review_scorese_rating)
+```
+
+显示然后逐个说明。
+
+
+
+
+
+
+
+# 4. 计算价格与评分之间的 Pearson 相关系数
+# 排除缺失值，确保两个变量的数据完整
+
+```{r}
+
+cor_data <- listings_clean |>
+  drop_na(price, review_scores_rating)
+
+correlation <- cor(
+  cor_data$price,
+  cor_data$review_scores_rating,
+  method = "pearson"
+)
+
+print(correlation)
+```
+
+# 5. 统计显著性
+
+```{r}
+cor_result <- cor.test(
+  cor_data$price,
+  cor_data$review_scores_rating,
+  method = "pearson"
+)
+
+print(cor_result)
+```
+
+
+```{r}
+
+
+```
+
+
+# 6. 结果解释
+# 相关系数及 p 值
+
+```{r}
+cat("Correlation:", round(correlation, 4), "\n")
+cat("P-value:", cor_result$p.value, "\n")
+
+if (cor_result$p.value < 0.05) {
+  print("Statistically significant correlation")
+} else {
+  print("Correlation is not statistically significant")
+}
+```
+

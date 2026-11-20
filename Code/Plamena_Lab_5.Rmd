@@ -1,0 +1,196 @@
+---
+title: "Lab_5"
+author: "Plamena Panayotova"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# 1. Load libraries:
+
+library(tidyverse)
+library(flextable)
+library(knitr)
+library(kableExtra) # need this for table formatting
+library(flextable) # need this for table formatting
+library(broom) # need this for a tidy table of test results
+library(car) # need this for Levene's test
+
+
+# 2.  Read in data (as we did in Labs 1 and 2):
+
+listings_clean <- readRDS("listings_clean.rds")
+
+```
+
+
+# Exercise 1. 
+
+## 1.1. Creating a subset:
+
+
+
+```{r}
+# 1. Create a new subset of your data which excludes shared rooms.
+
+
+listings_subset <- listings_clean |> 
+  filter(room_type != "Shared room") |> 
+  droplevels() # drops any category (or 'level') with zero values, in our case that's "Shared Room"
+
+# quick check
+levels(listings_subset$room_type)
+
+```
+
+
+
+## 1.2. Visualising the relationship between price and room type:
+
+
+```{r}
+
+listings_subset |>
+  ggplot(aes(price, room_type)) + 
+  geom_boxplot() +
+  coord_flip() +
+    labs(title = "Distribution of price of Airbnb listings in Edinburgh",
+       subtitle = "Prices restricted to range £25 to £1,000",
+       y = "Room type",
+       x = "Price (£)",
+       caption = "Source: InsideAirbnb.com")
+
+```
+
+
+```{r}
+
+listings_subset |>
+  ggplot(aes(price, fill = room_type)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution of price of Airbnb listings in Edinburgh",
+       subtitle = "Prices restricted to range £25 to £1,000",
+       x = "Price (£)",
+       y = "Count",
+       caption = "Source: InsideAirbnb.com",
+       fill = "Room type")
+
+```
+
+
+
+# Exercise 2. 
+
+## 2.1. A basic table of the mean and SD of price by room type:
+
+```{r}
+
+listings_subset |>
+  group_by(room_type) |>
+  summarise(
+    count= n(),
+    mean_price = round(mean(price), 2),
+    sd_price = round(sd(price), 2),
+    variance = round(var(price), 2)
+  )
+
+```
+
+
+
+## 2.2 Formatting the summary statistics table:
+
+```{r}
+
+listings_subset |>
+  group_by(room_type) |>
+  summarise(
+    count= n(),
+    mean_price = round(mean(price), 2),
+    sd_price = round(sd(price), 2),
+     variance = round(var(price), 2)
+    ) |> 
+   kable() 
+```
+
+
+
+# Exercise 3. 
+
+## 3.1 The t-test:
+
+```{r}
+
+
+t.test(price ~ room_type, data = listings_subset)
+
+
+```
+
+
+The **Welch Two Sample** t-test is a variation of the standard Student’s t-test used to compare the means of two independent groups. It is the default t-test in R (t.test() function) because it is more robust when the two groups have unequal variances (heteroscedasticity). We can check for heteroscedasticity in several ways: look at the boxplot above; check mean, sd and variance values of both groups; do a "Levene's Test".
+
+## 3.2 Levene's test:
+
+```{r}
+
+leveneTest(price ~ room_type, data = listings_subset)
+
+```
+
+
+**Null hypothesis:** variances are equal.
+
+- If *p* > 0.05, you fail to reject the null, so the equal-variance assumption is plausible. If that's the case, you can use **Student's t-test** `t.test(price ~ room_type, data = listings_subset, var.equal = TRUE)`  
+- If *p* < 0.05, the variances are likely unequal, and you should use **Welch’s t-test** `t.test(price ~ room_type, data = listings_subset, var.equal = FALSE)` or simply `t.test(price ~ room_type, data = listings_subset)`   
+
+
+## The t-test equations:
+
+
+$$
+t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}
+$$
+$$
+df = \frac{\left( \frac{s_1^2}{n_1} + \frac{s_2^2}{n_2} \right)^2}
+{\frac{\left( \frac{s_1^2}{n_1} \right)^2}{n_1 - 1} + \frac{\left( \frac{s_2^2}{n_2} \right)^2}{n_2 - 1}}
+$$
+
+**Degrees of freedom**
+
+Degrees of freedom represent the number of independent pieces of information that go into estimating a parameter.
+
+In the context of a t-test, it’s related to how many observations you have minus the number of parameters you’re estimating (usually the mean of each group).
+
+The degrees are freedom are important since:
+
+- The t-distribution is slightly wider (has heavier tails) when df is small.
+
+- Smaller df mean more uncertainty which means larger critical t-values which means it's harder to reject the null hypothesis.
+
+- As df approaches infinity, the t-distribution approaches the normal distribution.
+
+## 9. Formatting the output:
+
+```{r}
+
+#Do not run this chunk. The code works for the html knitting, it's only for formatting purposes.
+t_test_result <- t.test(price ~ room_type, data = listings_subset)
+t_test_table <- tidy(t_test_result)
+
+tidy(t_test_result)
+
+kable(t_test_table, format = "html") |>
+  kable_styling()
+
+
+```
+
+
+
+
+
+
+

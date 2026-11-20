@@ -1,0 +1,306 @@
+---
+title: "Lab_6"
+author: "Plamena Panayotova"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    theme: cosmo
+date: "`r Sys.Date()`"
+---
+
+Word count: `r wordcountaddin::word_count()`
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# 1. Load libraries:
+
+library(tidyverse)
+library(flextable)
+library(knitr)
+library(kableExtra) # need this for table formatting
+library(flextable) # need this for table formatting
+library(broom) # need this for a tidy table of test results
+library(car) # need this for Levene's test
+
+
+
+# 2.  Read in data:
+
+listings_clean <- readRDS("listings_clean.rds")
+
+
+```
+
+# Exercise 1: \
+
+## A boxplot of price by room type: \
+
+```{r}
+
+listings_clean |>
+  ggplot(aes(room_type, price)) +
+  geom_boxplot() +
+  scale_y_log10(breaks = c(10, 100, 1000), limits = c(10, NA)) +
+    labs(title = "Distribution of price of Airbnb listings in Edinburgh by room type",
+       subtitle = "Prices restricted to range $25 to $1,000",
+       x = "Room type",
+       y = "Price (£)",
+       caption = "Source: InsideAirbnb.com") +
+  theme_minimal()
+
+```
+
+# Exercise 2: \
+
+## Summary statistics of price by room type: \
+
+```{r}
+
+listings_clean |>
+    group_by(room_type) |>
+  summarise(
+    count= n(),
+    mean_price = round(mean(price), 2),
+    sd_price = round(sd(price), 2)
+  )
+    
+```
+
+## Full summary statistics of price by room type:
+
+```{r}
+
+listings_clean |>
+  group_by(room_type) |>
+  summarise(
+    Count= n(),
+    Mean = round(mean(price), 2),
+    SD = round(sd(price), 2),
+    Variance = round(var(price), 2),
+    Min = min(price),
+    Max = max(price),
+    Median = round(median(price), 2),
+    IQR = round(IQR(price), 2),
+    Q1 = round(quantile(price, 0.25), 2),  
+    Q3 = round(quantile(price, 0.75), 2)
+  ) |> 
+   kable() 
+
+
+```
+
+
+
+# Exercise 3: \
+
+## Running the ANOVA test: \
+
+
+```{r}
+
+
+aov(price ~ room_type, data = listings_clean) |>
+  summary()
+
+
+
+```
+## Summary of results:
+
+\
+
+**Null hypothesis:** \
+
+There is no difference in mean room prices between the three room types. In other words, the *population* mean room price is equal across all three groups.
+
+**Alternative hypothesis:** \
+
+At least one room type has a different population mean price.
+
+**1. Degrees of Freedom (Df)** \
+
+room_type: 2 - There are three room types, and the degrees of freedom are calculated as the number of groups minus one (3 − 1 = 2). \
+Residuals: 13,644 - The total number of observations minus the number of groups. \
+
+**2. Sum of Squares (Sum Sq)** \
+
+room_type: 21,888,594 - The between-group sum of squares. It measures the variation in room prices associated with differences between the mean prices of the three room types. \
+Residuals: 245,970,112 - The within-group sum of squares. It measures the variation in room prices that remains within the three groups, i.e. variation not accounted for by differences between their means. \
+
+**3. Mean Square (Mean Sq)** \
+
+room_type: 10,944,297 - The mean square represents the average sum of squares per degree of freedom, so sum of squares divided by Df (21,888,594 / 2). \
+Residuals: 18,028 - The mean square represents the average sum of squares per degree of freedom, so sum of squares divided by Df (245,970,112  / 13,644). \
+
+**4. F-Statistic (F value)** \
+
+This is the ratio: F =  10,944,297/18,028 = 607.1 \
+The F-statistic is the ratio of the between-group mean square to the within-group (residual) mean square. A larger F-value suggests that the variation between the group means is considerably greater than the variation within the groups. An F-value of 607.1 suggests substantial differences in average room prices between the three room types. \
+
+**5. P-value** \
+
+p-value: 2e-16 (reported as less than 2 × 10<sup>-16</sup>). This is an extremely small p-value, indicating that the observed F-statistic (607.1) would be highly unlikely if the null hypothesis were true. We therefore reject the null hypothesis and conclude that there is statistically significant evidence that average room prices differ between the three room types. Note, however, that ANOVA does not tell us which groups differ from one another. We would need a post-hoc test (such as Tukey's HSD) to identify which specific pairs of room types have significantly different mean prices.
+
+**Final note** \
+
+It is important to distinguish between statistical significance and the *size* of the differences. The very large F-statistic and extremely small p-value indicate strong evidence of differences in mean room prices. However, statistical significance does not tell us how large or substantively important those differences are. \
+
+Note that doing an ANOVA test yields the same results as a linear regression model with room-type as the only predictor. \
+
+See below: \
+
+```{r}
+
+lm(price ~ room_type, data=listings_clean) |>
+ summary()
+
+```
+
+## Checking the normality of residuals:
+
+In ANOVA, residuals represent the variation in price not explained by differences between room types. In one-way ANOVA, the residual is the difference between an observed value and the mean of the group to which that observation belongs. We need to check whether residuals are approximately normally distributed and whether they appear random, that is, without any systematic patterns. These checks help us assess whether the assumptions underlying ANOVA are reasonably satisfied and whether the resulting p-values can be trusted. \
+
+ANOVA is generally quite robust to moderate departures from normality, particularly when sample sizes are large and reasonably similar across groups (is this the case? Remember Shared Room?). However, ANOVA is more sensitive to violations of the equal-variances assumption when group sizes are unequal. If sample sizes are small and/or residuals are strongly non-normal, the results may be less reliable. In such cases, we should investigate further and consider whether an alternative approach, such as a non-parametric test, might be more appropriate. \
+
+
+```{r}
+#Save the model and model summary:
+anova_model_1 <- listings_clean %>%
+  aov(price ~ room_type, data = .)  # Store the aov model first
+
+anova_test_1 <- summary(anova_model_1)
+
+# Convert the output into a tidy data frame
+tidy_anova_model_1 <- broom::tidy(anova_model_1)
+
+print(tidy_anova_model_1)
+
+# Extract residuals:
+residuals <- residuals(anova_model_1)
+
+# Check normality of residuals: run the below four lines SIMULTANEOUSLY.
+par(mfrow = c(1, 2))
+hist(residuals, main = "Histogram of Residuals", col = "lightblue", breaks = 10)
+qqnorm(residuals, main = "Q-Q Plot of Residuals")
+qqline(residuals, col = "red")
+
+```
+
+**The histogram: ** \
+
+Shows the residuals combined across the three room_type groups. \
+
+**The QQ plot:** \
+
+*1. X-axis: "Theoretical Quantiles"* \
+
+These are the quantiles from a perfectly normal distribution with the same mean and standard deviation as in the sample. In other words, these are the values you would expect if the residuals were perfectly normally distributed. \
+
+*2. Y-axis: "Sample Quantiles"* \
+
+These are the actual quantiles from the residuals. It plots the sorted residuals from our sample against what they would be if they followed a normal distribution. \
+
+The plots clearly show that the residuals (unexplained variation) are not normally distributed - there are very big positive residuals (see skewed histogram) and the shape of the distribution of residuals deviates greatly from a "perfect" normal distribution (if both were very similar, then the residuals will fall on the red line in the QQ plot). \
+
+## Checking for equal variances:
+
+```{r}
+
+leveneTest(price ~ room_type, data = listings_clean)
+
+```
+
+**Null hypothesis:** variances are equal. \
+
+Our result is sig, so variances are significantly different from 0.
+
+## Transforming price to a LOG scale:
+
+```{r}
+# Transform price to log scale and run ANOVA
+anova_model_log <- listings_clean %>%
+  aov(log(price) ~ room_type, data = .)  # Log-transform price
+
+anova_summary_log <- summary(anova_model_log)  # Summarize ANOVA results
+print(anova_summary_log)
+
+# Convert the output into a tidy data frame
+tidy_anova_log <- broom::tidy(anova_model_log)
+
+print(tidy_anova_log)
+
+# Extract residuals
+residuals_log <- residuals(anova_model_log)
+
+# Check normality of residuals - run the below four lines SIMULTANEOUSLY.
+par(mfrow = c(1, 2))  # Arrange plots in 1 row, 2 columns
+hist(residuals_log, main = "Histogram of Residuals (Log Price)", col = "lightblue", breaks = 10)
+qqnorm(residuals_log, main = "Q-Q Plot of Residuals (Log Price)")
+qqline(residuals_log, col = "red")
+
+
+```
+\
+Looks a bit better? \
+
+# Exercise 4:
+
+## Correlation test:
+
+
+```{r}
+
+cor.test(~ price + review_scores_rating, data = listings_clean)
+
+# Perform the correlation test
+cor_result <- cor.test(~ price + review_scores_rating, data = listings_clean)
+
+# Convert the output into a tidy data frame
+tidy_cor <- broom::tidy(cor_result)
+
+# Print the result
+print(tidy_cor)
+
+```
+**Null hypothesis:** the population Pearson correlation coefficient is 0. \
+
+**Alterantive hypothesis:** The population Pearson correlation coefficient is *not* zero. \
+
+**1. t-statistic**: This is the test statistic.The t-statistic tells us how strong the evidence is that the correlation is different from zero. The larger its absolute value, the stronger the evidence. Here, the t-statistic is −8.4085, indicating strong evidence of a negative correlation.\
+
+**2. Degrees of freedom(Df)**: the number of paired observations minus 2 (n − 2). This determines the appropriate t-distribution used to assess the statistical significance of the correlation. \
+
+**3. p-value**: The probability of data given the null hypothesis, or in our case, the probability of obtaining a correlation at least as extreme as the one observed, assuming that the true population correlation is zero. Since the p-value is extremely small, (essentially 0), we can reject the null hypothesis. \
+
+**4. 95 percent CI**: We are 95% confident that the range -0.098 and -0.061 captures the true *population* Pearson correlation coefficient. Since the entire interval is below zero, this provides further evidence of a negative correlation. \
+
+**5. Sample estimate**: This is the Pearson correlation coefficient (r), which measures the strength and direction of the linear relationship between two variables. Here, r = -0.079. The negative value indicates that higher review scores tend to be associated with lower prices. However, the coefficient is very close to zero, indicating that this is a very weak linear relationship. \
+
+
+## Transforming the variables to log scale:
+
+```{r}
+
+cor.test(~ log(price) + log(review_scores_rating), data = listings_clean)
+# Perform the correlation test
+cor_result_log <- cor.test(~ log(price) + log(review_scores_rating), data = listings_clean)
+
+# Convert the output into a tidy data frame
+tidy_cor <- broom::tidy(cor_result)
+
+# Print the result
+print(tidy_cor)
+
+```
+
+
+**What happened?** \
+
+When we log-transform variables, their scales change, which can also affect the strength of their linear relationship.
+
+**1.** The negative relationship becomes slightly weaker after log transformation. Both coefficients are very close to zero, indicating a very weak negative linear association. \
+**2.** The absolute t-statistic becomes smaller. This indicates weaker evidence against the null hypothesis of zero correlation. \

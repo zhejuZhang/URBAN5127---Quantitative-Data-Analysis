@@ -1,0 +1,402 @@
+---
+title: "Hand_Lab_8"
+output: html_document
+date: "2026-11-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Research Design
+To what extent are room type, number of bedrooms, and review scores associated with Airbnb listing prices in Edinburgh?
+
+
+# 2.Model Summary
+DV: price
+IV: room_type / bedrooms / review_scores_rating
+
+M1	Bivariate regression：Price ~ Room type
+M2	Multiple linear regression：Price ~ Room type + Bedrooms + Review score
+
+# 3.Hypotheses
+M1:
+- H₀: The overall average prices of the three types of rooms are equal.
+- H₁: At least one of the overall average prices of the room types is different.
+M2:
+- H₀: All regression coefficients except the intercept are zero.
+- H₁: At least one of the regression coefficients is not zero.
+
+# 4.Explore the Variables
+
+```{r}
+library(tidyverse)
+library(knitr)
+listings_clean <- readRDS("listings_clean.rds")
+
+head(listings_clean)
+```
+
+
+```{r}
+required_vars <- c(
+  "price",
+  "room_type",
+  "bedrooms",
+  "review_scores_rating"
+)
+
+# 构建模型分析数据集
+model_data <- listings_clean |>
+  select(all_of(required_vars)) |>
+
+  # 将房型设置为分类变量
+  mutate(
+    room_type = factor(room_type)
+  ) |>
+
+  # 删除四个变量中存在缺失值的记录
+  drop_na() |>
+
+  # 删除无穷数及非正价格
+  filter(
+    is.finite(price),
+    is.finite(bedrooms),
+    is.finite(review_scores_rating),
+    price > 0
+  ) |>
+
+  # 删除未使用的分类水平
+  droplevels()
+```
+
+
+```{r}
+# 设置整套房源作为参照组
+model_data <- model_data |>
+  mutate(
+    room_type = relevel(
+      room_type,
+      ref = "Entire home/apt"
+    )
+  )
+```
+
+
+```{r}
+# 查看清洗前后的样本量
+cat("Original sample:", nrow(listings_clean), "\n")
+cat("Analysis sample:", nrow(model_data), "\n")
+cat("Excluded observations:",
+    nrow(listings_clean) - nrow(model_data), "\n")
+
+# 检查房型类别
+levels(model_data$room_type)
+
+# 检查模型数据结构
+glimpse(model_data)
+```
+
+**为什么要进行这一步？**
+
+本次 M1 和 M2 都使用 `model_data`，保证两个模型基于相同的观测样本。
+
+否则，如果 M1 使用全部 13,647 条价格记录，而 M2 排除了评分缺失记录，就很难区分模型表现的变化究竟来自新增变量，还是来自样本发生变化。
+
+需要注意，这里的完整案例分析可能带来样本选择偏差，因此后续应说明缺失记录的处理方式。
+
+## 3.3 Descriptive Statistics
+
+```{r descriptive-statistics}
+model_data |>
+  summarise(
+    n = n(),
+    mean_price = mean(price),
+    median_price = median(price),
+    sd_price = sd(price),
+    min_price = min(price),
+    max_price = max(price),
+    mean_bedrooms = mean(bedrooms),
+    mean_rating = mean(review_scores_rating)
+  ) |>
+  kable(digits = 2)
+```
+
+
+```{r descriptive-statistics}
+room_summary <- model_data |>
+  group_by(room_type) |>
+  summarise(
+    n = n(),
+    mean_price = mean(price),
+    median_price = median(price),
+    sd_price = sd(price),
+    Q1 = quantile(price, 0.25),
+    Q3 = quantile(price, 0.75),
+    .groups = "drop"
+  )
+
+room_summary |>
+  kable(
+    digits = 2,
+    caption = "Airbnb Prices by Room Type"
+  )
+```
+
+## 3.4 Visualise the Variables
+
+### Figure 1. Distribution of Price
+
+```{r price-histogram}
+ggplot(model_data, aes(x = price)) +
+  geom_histogram(
+    binwidth = 20,
+    fill = "skyblue",
+    colour = "white"
+  ) +
+  labs(
+    title = "Distribution of Airbnb Prices",
+    x = "Price (£)",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+### Figure 2. Price by Room Type
+
+```{r room-boxplot}
+ggplot(
+  model_data,
+  aes(x = room_type, y = price, fill = room_type)
+) +
+  geom_boxplot() +
+  labs(
+    title = "Airbnb Prices by Room Type",
+    x = "Room Type",
+    y = "Price (£)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+### Figure 3. Bedrooms and Price
+
+```{r bedroom-scatter}
+ggplot(
+  model_data,
+  aes(x = bedrooms, y = price)
+) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.15
+  ) +
+
+  # 蓝线为简单线性拟合线
+  geom_smooth(
+    method = "lm",
+    se = TRUE,
+    colour = "blue"
+  ) +
+  labs(
+    title = "Bedrooms and Airbnb Price",
+    x = "Number of Bedrooms",
+    y = "Price (£)"
+  ) +
+  theme_minimal()
+```
+
+### Figure 4. Review Scores and Price
+
+```{r rating-scatter}
+ggplot(
+  model_data,
+  aes(x = review_scores_rating, y = price)
+) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(
+    method = "lm",
+    se = TRUE,
+    colour = "blue"
+  ) +
+  labs(
+    title = "Review Scores and Airbnb Prices",
+    x = "Review Score",
+    y = "Price (£)"
+  ) +
+  theme_minimal()
+```
+
+# Part 4. Bivariate Linear Regression
+
+## 4.1 Build Model 1
+
+```{r model-1}
+model_1 <- lm(
+  price ~ room_type,
+  data = model_data
+)
+```
+
+
+```{r model-1}
+summary(model_1)
+```
+
+
+```{r model-1}
+# 查看各系数的95%置信区间
+confint(model_1)
+```
+
+
+```{r model-1}
+# 检验房型整体是否具有统计显著性
+anova(model_1)
+```
+
+## 4.2 Interpret Model 1
+
+运行 `summary(model_1)` 后，重点回答以下问题：
+
+1. What is the intercept? 它代表什么？
+2. Are the room-type coefficients positive or negative?
+3. Are the differences statistically significant?
+4. What proportion of price variation is explained by room type?
+
+**注意：这里暂时不要填写具体的回归系数，因为它们需要根据上述模型实际运行结果确定。**
+
+## 4.3 Residual Diagnostics for Model 1
+
+```{r model-1-diagnostics, fig.width=10, fig.height=8}
+# 使用四张标准诊断图
+par(mfrow = c(2, 2))
+
+plot(
+  model_1,
+  which = c(1, 2, 3, 5)
+)
+
+# 恢复默认绘图布局
+par(mfrow = c(1, 1))
+```
+
+## 4.4 Model 1 Residual Summary
+
+```{r model-1-residuals}
+# 提取残差
+residuals_m1 <- residuals(model_1)
+
+# 查看残差的分布
+summary(residuals_m1)
+
+# 计算残差的标准差
+sd(residuals_m1)
+
+# 检查残差均值
+mean(residuals_m1)
+```
+
+# Part 5. Multiple Linear Regression
+
+## 5.1 Build Model 2
+
+```{r model-2}
+model_2 <- lm(
+  price ~ room_type +
+    bedrooms +
+    review_scores_rating,
+  data = model_data
+)
+
+# 查看完整回归结果
+summary(model_2)
+
+# 查看95%置信区间
+confint(model_2)
+```
+
+## 5.2 Examine Individual Predictors
+
+```{r model-2-predictors}
+drop1(
+  model_2,
+  test = "F"
+)
+```
+
+## 5.3 Residual Diagnostics for Model 2
+
+```{r, fig.width=10, fig.height=8}
+par(mfrow = c(2, 2))
+
+plot(
+  model_2,
+  which = c(1, 2, 3, 5)
+)
+
+par(mfrow = c(1, 1))
+```
+
+## 5.4 Model 2 Residual Summary
+
+```{r model-2-residuals}
+# 提取多元回归的残差
+residuals_m2 <- residuals(model_2)
+
+# 查看分布
+summary(residuals_m2)
+
+# 残差均值
+mean(residuals_m2)
+
+# 残差标准差
+sd(residuals_m2)
+```
+
+# Part 6. Compare the Two Models
+
+## 6.1 Compare Model Performance
+
+```{r compare-models}
+model_comparison <- tibble(
+  Model = c("M1", "M2"),
+
+  N = c(
+    nobs(model_1),
+    nobs(model_2)
+  ),
+
+  R_squared = c(
+    summary(model_1)$r.squared,
+    summary(model_2)$r.squared
+  ),
+
+  Adjusted_R2 = c(
+    summary(model_1)$adj.r.squared,
+    summary(model_2)$adj.r.squared
+  ),
+
+  Residual_SE = c(
+    summary(model_1)$sigma,
+    summary(model_2)$sigma
+  ),
+
+  AIC = c(
+    AIC(model_1),
+    AIC(model_2)
+  )
+)
+
+model_comparison |>
+  kable(digits = 4)
+```
+
+## 6.2 Test Whether Additional Predictors Improve the Model
+
+```{r compare-f-test}
+anova(
+  model_1,
+  model_2
+)
+```
